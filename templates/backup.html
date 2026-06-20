@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>Backup &amp; Restore</h1>
+  <form method="post" action="{{ url_for('backup.run') }}" style="display:inline">
+    <input type="hidden" name="mode" value="manual">
+    <button class="btn primary">Run Backup Now</button>
+  </form>
+</div>
+<p class="muted">
+  Auto schedule: every {{ config.BACKUP_INTERVAL_HOURS }} hour(s). Retention: last {{ config.BACKUP_KEEP_LAST }} backups kept.
+  {% if not ftp_configured %}<br><b>FTP not configured</b> — set <code>FTP_HOST</code>, <code>FTP_USER</code>, <code>FTP_PASSWORD</code> env vars to enable uploads.{% endif %}
+</p>
+
+<h2>Available backups</h2>
+<table class="data"><thead><tr><th>File</th><th>Size</th><th>Created</th><th>Actions</th></tr></thead><tbody>
+{% for b in backups %}
+<tr>
+  <td>{{ b.name }}</td><td>{{ b.size_kb }} KB</td><td>{{ b.created }}</td>
+  <td>
+    {% if current_user.is_master() %}
+    <a href="{{ url_for('backup.download', fname=b.name) }}">Download</a> ·
+    <form method="post" action="{{ url_for('backup.restore') }}" style="display:inline"
+          onsubmit="return confirm('Restore will overwrite ALL data. Continue?')">
+      <input type="hidden" name="filename" value="{{ b.name }}">
+      <button class="link">Restore</button>
+    </form>·
+    <form method="post" action="{{ url_for('backup.delete', fname=b.name) }}" style="display:inline"
+          onsubmit="return confirm('Delete this backup?')">
+      <button class="link danger">Delete</button>
+    </form>·
+    {% endif %}
+    <form method="post" action="{{ url_for('backup.upload_ftp') }}" style="display:inline">
+      <input type="hidden" name="filename" value="{{ b.name }}">
+      <button class="link" {% if not ftp_configured %}disabled{% endif %}>Upload to FTP</button>
+    </form>
+  </td>
+</tr>
+{% else %}
+<tr><td colspan="4" class="muted">No backups yet. Click "Run Backup Now".</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Recent log</h2>
+<table class="data"><thead><tr><th>Time</th><th>File</th><th>Mode</th><th>Size</th><th>FTP</th></tr></thead><tbody>
+{% for l in logs %}
+<tr>
+  <td>{{ l.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+  <td>{{ l.filename }}</td><td>{{ l.mode }}</td>
+  <td>{{ (l.size_bytes or 0) // 1024 }} KB</td>
+  <td>{% if l.ftp_uploaded %}✓ {{ l.ftp_message }}{% else %}{{ l.ftp_message or '—' }}{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

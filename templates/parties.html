@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>Parties (Customers & Suppliers)</h1>
+  {% if current_user.is_admin() %}<a class="btn" href="{{ url_for('inventory.new_party') }}">+ New Party</a>{% endif %}
+</div>
+<table class="data"><thead><tr>
+  <th>Name</th><th>Type</th><th>GSTIN</th><th>State</th><th>Phone</th><th>Opening ₹</th><th></th>
+</tr></thead><tbody>
+{% for p in parties %}
+<tr>
+  <td>{{p.name}}</td><td>{{p.party_type}}</td><td>{{p.gstin}}</td>
+  <td>{{p.state}} ({{p.state_code}})</td><td>{{p.phone}}</td>
+  <td>{{ "{:,.2f}".format(p.opening_balance) }}</td>
+  <td>{% if current_user.is_admin() %}<a href="{{ url_for('inventory.edit_party', pid=p.id) }}">Edit</a>{% endif %}</td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

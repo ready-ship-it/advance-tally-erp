@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Company Settings</h1>
+<form method="post" class="form-grid">
+  <label class="full">Company Name<input name="company_name" value="{{ data.get('company_name','') }}"></label>
+  <label class="full">Address<textarea name="company_address">{{ data.get('company_address','') }}</textarea></label>
+  <label>GSTIN<input name="company_gstin" value="{{ data.get('company_gstin','') }}" maxlength="15"></label>
+  <label>State<input name="company_state" value="{{ data.get('company_state','Maharashtra') }}"></label>
+  <label>State Code<input name="company_state_code" value="{{ data.get('company_state_code','27') }}" maxlength="3"></label>
+  <div class="full"><button class="btn primary">Save</button></div>
+</form>
+<p class="muted small">GST percentages are configured per Category and per Product (editable). Inter-state transactions automatically use IGST.</p>
+{% endblock %}

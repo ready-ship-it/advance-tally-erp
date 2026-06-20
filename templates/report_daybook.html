@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Day Book</h1>
+<form method="get" class="row-form">
+  <label>From <input type="date" name="from" value="{{ d_from }}"></label>
+  <label>To <input type="date" name="to" value="{{ d_to }}"></label>
+  <button class="btn">Apply</button>
+</form>
+<table class="data"><thead><tr>
+  <th>Date</th><th>Type</th><th>No</th><th>Party</th><th>Taxable</th><th>GST</th><th>Total</th>
+</tr></thead><tbody>
+{% for v in vouchers %}
+<tr>
+  <td>{{ v.voucher_date }}</td><td>{{ v.voucher_type }}</td>
+  <td><a href="{{ url_for('vouchers.view', vid=v.id) }}">{{ v.voucher_no }}</a></td>
+  <td>{{ v.party.name if v.party else '—' }}</td>
+  <td>{{ "{:,.2f}".format(v.taxable_value) }}</td>
+  <td>{{ "{:,.2f}".format(v.cgst_amount + v.sgst_amount + v.igst_amount) }}</td>
+  <td>{{ "{:,.2f}".format(v.grand_total) }}</td>
+</tr>
+{% else %}<tr><td colspan="7" class="muted">No vouchers in range.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

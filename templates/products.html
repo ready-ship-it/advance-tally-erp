@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>Products</h1>
+  {% if current_user.is_admin() %}<a class="btn" href="{{ url_for('inventory.new_product') }}">+ New Product</a>{% endif %}
+</div>
+<form class="search" method="get">
+  <input name="q" value="{{ q }}" placeholder="Search by name, SKU, barcode, HSN...">
+  <button>Search</button>
+  <input id="barcodeInput" placeholder="Scan barcode here" autofocus>
+</form>
+<table class="data"><thead><tr>
+  <th>SKU</th><th>Barcode</th><th>Name</th><th>Category</th>
+  <th>HSN</th><th>GST%</th><th>Stock</th><th>Sale ₹</th><th></th>
+</tr></thead><tbody>
+{% for p in products %}
+<tr>
+  <td>{{ p.sku }}</td><td>{{ p.barcode or '—' }}</td><td>{{ p.name }}</td>
+  <td>{{ p.category.name if p.category else '' }}</td>
+  <td>{{ p.hsn_code }}</td><td>{{ p.gst_rate }}</td>
+  <td>{{ p.stock_qty }}</td><td>{{ "{:,.2f}".format(p.sale_price) }}</td>
+  <td>{% if current_user.is_admin() %}<a href="{{ url_for('inventory.edit_product', pid=p.id) }}">Edit</a>{% endif %}</td>
+</tr>
+{% else %}
+<tr><td colspan="9" class="muted">No products. {% if current_user.is_admin() %}<a href="{{ url_for('inventory.new_product') }}">Add the first one</a>{% endif %}.</td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}
+{% block scripts %}
+<script>
+// Barcode scanner handler: USB scanners emit "code\n"
+document.getElementById('barcodeInput')?.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const code = this.value.trim();
+    if(!code) return;
+    fetch('{{ url_for("inventory.product_lookup") }}?code=' + encodeURIComponent(code))
+      .then(r => r.json()).then(d => {
+        if(d.found){ window.location = '{{ url_for("inventory.products") }}?q=' + encodeURIComponent(d.sku); }
+        else alert('No product with code ' + code);
+      });
+    this.value = '';
+  }
+});
+</script>
+{% endblock %}

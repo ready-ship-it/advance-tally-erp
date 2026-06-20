@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>New {{ vtype.title() }} Invoice</h1>
+<form id="invForm" class="form-grid">
+  <label>Date<input type="date" name="voucher_date" value="{{ today }}" required></label>
+  <label>Party
+    <select name="party_id" id="partySel">
+      <option value="">— Cash / Walk-in —</option>
+      {% for p in parties %}<option value="{{p.id}}" data-state="{{p.state_code}}">{{p.name}} ({{p.state}})</option>{% endfor %}
+    </select>
+  </label>
+  <label>Payment Mode
+    <select name="payment_mode"><option value="credit">Credit</option><option value="cash">Cash</option><option value="bank">Bank</option></select>
+  </label>
+  <label><input type="checkbox" id="interState" name="is_interstate"> Inter-state (IGST instead of CGST+SGST)</label>
+  <label class="full">Reference<input name="reference"></label>
+  <label class="full">Narration<textarea name="narration"></textarea></label>
+</form>
+
+<div class="card">
+  <div class="row-between"><h2>Items</h2>
+    <div>
+      <input id="scanBarcode" placeholder="Scan barcode / SKU" style="width:200px">
+      <button class="btn" type="button" id="addRow">+ Add row</button>
+    </div>
+  </div>
+  <table class="data" id="itemsTbl"><thead><tr>
+    <th style="width:30%">Product</th><th>HSN</th><th>Qty</th><th>Rate</th>
+    <th>Disc%</th><th>GST%</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th><th></th>
+  </tr></thead><tbody></tbody></table>
+  <div class="totals">
+    <div>Taxable: <b id="totTaxable">0.00</b></div>
+    <div>CGST: <b id="totCGST">0.00</b></div>
+    <div>SGST: <b id="totSGST">0.00</b></div>
+    <div>IGST: <b id="totIGST">0.00</b></div>
+    <div class="big">Grand Total: ₹ <b id="totGrand">0.00</b></div>
+  </div>
+  <button class="btn primary" id="saveBtn" type="button">Save Invoice</button>
+  <a href="{{ url_for('vouchers.list_vouchers', vtype=vtype) }}" class="btn">Cancel</a>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const PRODUCTS = {{ products|tojson }}.map(p => ({
+  id: p.id, name: p.name, sku: p.sku, barcode: p.barcode,
+  hsn: p.hsn_code, gst: p.gst_rate, rate: p.sale_price || p.purchase_price || 0,
+  unit: p.unit
+}));
+const tbody = document.querySelector('#itemsTbl tbody');
+
+function row(p = {}){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input list="prodList" class="prod" placeholder="Search...">
+        <input type="hidden" class="pid" value="${p.id||''}"></td>
+    <td><input class="hsn" value="${p.hsn||''}"></td>
+    <td><input type="number" step="0.001" class="qty" value="1"></td>
+    <td><input type="number" step="0.01" class="rate" value="${p.rate||0}"></td>
+    <td><input type="number" step="0.01" class="disc" value="0"></td>
+    <td><input type="number" step="0.01" class="gst" value="${p.gst||18}"></td>
+    <td class="tax">0.00</td><td class="cg">0.00</td><td class="sg">0.00</td>
+    <td class="ig">0.00</td><td class="lt">0.00</td>
+    <td><a href="#" class="rem">×</a></td>`;
+  tbody.appendChild(tr);
+  tr.querySelector('.prod').addEventListener('input', function(){
+    const m = PRODUCTS.find(x => x.name === this.value || x.sku === this.value);
+    if(m){
+      tr.querySelector('.pid').value = m.id;
+      tr.querySelector('.hsn').value = m.hsn || '';
+      tr.querySelector('.gst').value = m.gst || 18;
+      tr.querySelector('.rate').value = m.rate || 0;
+      recalc();
+    }
+  });
+  if(p.name) tr.querySelector('.prod').value = p.name;
+  tr.querySelectorAll('input').forEach(i => i.addEventListener('input', recalc));
+  tr.querySelector('.rem').addEventListener('click', e => { e.preventDefault(); tr.remove(); recalc(); });
+  recalc();
+}
+
+function recalc(){
+  const inter = document.getElementById('interState').checked;
+  let tax=0, cg=0, sg=0, ig=0;
+  document.querySelectorAll('#itemsTbl tbody tr').forEach(tr => {
+    const qty = +tr.querySelector('.qty').value || 0;
+    const rate = +tr.querySelector('.rate').value || 0;
+    const disc = +tr.querySelector('.disc').value || 0;
+    const gst  = +tr.querySelector('.gst').value || 0;
+    const t = +(qty*rate*(1-disc/100)).toFixed(2);
+    let c=0, s=0, i=0;
+    if(inter){ i = +(t*gst/100).toFixed(2); } else { c = s = +(t*(gst/2)/100).toFixed(2); }
+    tr.querySelector('.tax').textContent = t.toFixed(2);
+    tr.querySelector('.cg').textContent = c.toFixed(2);
+    tr.querySelector('.sg').textContent = s.toFixed(2);
+    tr.querySelector('.ig').textContent = i.toFixed(2);
+    tr.querySelector('.lt').textContent = (t+c+s+i).toFixed(2);
+    tax+=t; cg+=c; sg+=s; ig+=i;
+  });
+  const grand = Math.round(tax+cg+sg+ig);
+  document.getElementById('totTaxable').textContent = tax.toFixed(2);
+  document.getElementById('totCGST').textContent = cg.toFixed(2);
+  document.getElementById('totSGST').textContent = sg.toFixed(2);
+  document.getElementById('totIGST').textContent = ig.toFixed(2);
+  document.getElementById('totGrand').textContent = grand.toLocaleString();
+}
+
+document.getElementById('addRow').addEventListener('click', () => row());
+document.getElementById('interState').addEventListener('change', recalc);
+document.getElementById('scanBarcode').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const code = e.target.value.trim();
+    const m = PRODUCTS.find(x => x.barcode === code || x.sku === code);
+    if(m){ row(m); } else { alert('Code not found: '+code); }
+    e.target.value = '';
+  }
+});
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const fd = new FormData(document.getElementById('invForm'));
+  const items = [...document.querySelectorAll('#itemsTbl tbody tr')].map(tr => ({
+    product_id: tr.querySelector('.pid').value || null,
+    description: tr.querySelector('.prod').value,
+    hsn_code: tr.querySelector('.hsn').value,
+    qty: tr.querySelector('.qty').value,
+    rate: tr.querySelector('.rate').value,
+    discount_pct: tr.querySelector('.disc').value,
+    gst_rate: tr.querySelector('.gst').value,
+    unit: 'PCS'
+  })).filter(it => +it.qty > 0);
+  if(!items.length) return alert('Add at least one item');
+  const body = Object.fromEntries(fd.entries());
+  body.is_interstate = document.getElementById('interState').checked;
+  body.items = items;
+  const r = await fetch(window.location.href, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  });
+  const d = await r.json();
+  if(d.ok){ window.location = '{{ url_for("vouchers.list_vouchers", vtype=vtype) }}'; }
+  else alert('Save failed');
+});
+
+// Datalist for product search
+const dl = document.createElement('datalist'); dl.id='prodList';
+PRODUCTS.forEach(p => { const o=document.createElement('option'); o.value=p.name; dl.appendChild(o); });
+document.body.appendChild(dl);
+
+// Auto-set IGST if party state differs from company default (27)
+document.getElementById('partySel').addEventListener('change', function(){
+  const st = this.selectedOptions[0]?.dataset.state;
+  document.getElementById('interState').checked = (st && st !== '27');
+  recalc();
+});
+
+row();
+</script>
+{% endblock %}

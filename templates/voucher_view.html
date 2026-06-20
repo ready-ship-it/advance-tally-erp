@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ v.voucher_type.title() }} {{ v.voucher_no }}</h1>
+  <a href="javascript:window.print()" class="btn">Print</a>
+</div>
+<div class="card">
+  <div><b>Date:</b> {{ v.voucher_date }} · <b>FY:</b> {{ v.fy_year }}-{{ (v.fy_year+1)%100 }}</div>
+  <div><b>Party:</b> {{ v.party.name if v.party else '—' }}
+    {% if v.party %}· GSTIN: {{ v.party.gstin or '—' }} · State: {{ v.party.state }} ({{ v.party.state_code }}){% endif %}
+  </div>
+  <div><b>Mode:</b> {{ v.payment_mode }} · <b>Reference:</b> {{ v.reference or '—' }}</div>
+  <p class="muted">{{ v.narration or '' }}</p>
+</div>
+
+{% if v.items %}
+<table class="data"><thead><tr>
+  <th>#</th><th>Description</th><th>HSN</th><th>Qty</th><th>Rate</th>
+  <th>Taxable</th><th>GST%</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th>
+</tr></thead><tbody>
+{% for it in v.items %}
+<tr>
+  <td>{{ loop.index }}</td><td>{{ it.description or it.product.name }}</td>
+  <td>{{ it.hsn_code }}</td><td>{{ it.qty }} {{ it.unit }}</td>
+  <td>{{ "{:,.2f}".format(it.rate) }}</td>
+  <td>{{ "{:,.2f}".format(it.taxable_value) }}</td>
+  <td>{{ it.gst_rate }}</td>
+  <td>{{ "{:,.2f}".format(it.cgst_amount) }}</td>
+  <td>{{ "{:,.2f}".format(it.sgst_amount) }}</td>
+  <td>{{ "{:,.2f}".format(it.igst_amount) }}</td>
+  <td>{{ "{:,.2f}".format(it.line_total) }}</td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+<div class="card totals-card">
+  <div>Taxable: ₹ {{ "{:,.2f}".format(v.taxable_value) }}</div>
+  <div>CGST: ₹ {{ "{:,.2f}".format(v.cgst_amount) }}</div>
+  <div>SGST: ₹ {{ "{:,.2f}".format(v.sgst_amount) }}</div>
+  <div>IGST: ₹ {{ "{:,.2f}".format(v.igst_amount) }}</div>
+  <div>Round Off: ₹ {{ "{:,.2f}".format(v.round_off) }}</div>
+  <div class="big">Grand Total: ₹ {{ "{:,.2f}".format(v.grand_total) }}</div>
+</div>
+{% endblock %}

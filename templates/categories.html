@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>Categories</h1>
+</div>
+{% if current_user.is_admin() %}
+<form method="post" action="{{ url_for('inventory.new_category') }}" class="row-form">
+  <input name="name" placeholder="Category name" required>
+  <input name="default_hsn" placeholder="Default HSN">
+  <input name="default_gst_rate" type="number" step="0.01" value="18" style="width:90px">
+  <button class="btn primary">Add</button>
+</form>
+{% endif %}
+<table class="data"><thead><tr><th>Name</th><th>Default HSN</th><th>Default GST %</th><th># Products</th></tr></thead><tbody>
+{% for c in categories %}<tr><td>{{c.name}}</td><td>{{c.default_hsn}}</td><td>{{c.default_gst_rate}}</td><td>{{c.products|length}}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

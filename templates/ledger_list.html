@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ledgers</h1>
+<table class="data"><thead><tr><th>Group</th><th>Name</th><th>Opening Bal</th><th></th></tr></thead><tbody>
+{% for l in ledgers %}
+<tr>
+  <td>{{ l.group_name }}</td><td>{{ l.name }}</td>
+  <td>{{ "{:,.2f}".format(l.opening_balance) }}</td>
+  <td><a href="{{ url_for('reports.ledger_statement', lid=l.id) }}">Statement</a></td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

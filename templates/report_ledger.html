@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Ledger: {{ ledger.name }} <span class="muted">({{ ledger.group_name }})</span></h1>
+<table class="data"><thead><tr>
+  <th>Date</th><th>Voucher</th><th>Narration</th><th>Debit</th><th>Credit</th><th>Running</th>
+</tr></thead><tbody>
+<tr><td colspan="5"><b>Opening Balance</b></td><td>{{ "{:,.2f}".format(opening) }}</td></tr>
+{% for e, running in entries %}
+<tr>
+  <td>{{ e.entry_date }}</td>
+  <td>{% if e.voucher %}<a href="{{ url_for('vouchers.view', vid=e.voucher.id) }}">{{ e.voucher.voucher_no }}</a>{% endif %}</td>
+  <td>{{ e.narration }}</td>
+  <td>{{ "{:,.2f}".format(e.debit) if e.debit else '' }}</td>
+  <td>{{ "{:,.2f}".format(e.credit) if e.credit else '' }}</td>
+  <td>{{ "{:,.2f}".format(running) }}</td>
+</tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

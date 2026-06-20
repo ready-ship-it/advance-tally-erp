@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Dashboard <span class="muted">FY {{ fy }}-{{ (fy+1) % 100 }}</span></h1>
+<div class="kpi-grid">
+  <div class="kpi"><div class="lbl">Sales</div><div class="val">₹ {{ "{:,.2f}".format(sales_total) }}</div></div>
+  <div class="kpi"><div class="lbl">Purchase</div><div class="val">₹ {{ "{:,.2f}".format(purchase_total) }}</div></div>
+  <div class="kpi"><div class="lbl">GST Collected</div><div class="val">₹ {{ "{:,.2f}".format(gst_collected) }}</div></div>
+  <div class="kpi"><div class="lbl">Products</div><div class="val">{{ product_count }}</div></div>
+  <div class="kpi"><div class="lbl">Parties</div><div class="val">{{ party_count }}</div></div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Low-stock products</h2>
+    {% if low_stock %}
+    <table class="data"><thead><tr><th>SKU</th><th>Name</th><th>Stock</th><th>Reorder</th></tr></thead><tbody>
+    {% for p in low_stock %}
+      <tr><td>{{ p.sku }}</td><td>{{ p.name }}</td><td>{{ p.stock_qty }}</td><td>{{ p.reorder_level }}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">All stock above reorder level.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Recent vouchers</h2>
+    {% if recent %}
+    <table class="data"><thead><tr><th>Date</th><th>Type</th><th>No</th><th>Total</th></tr></thead><tbody>
+    {% for v in recent %}
+      <tr><td>{{ v.voucher_date }}</td><td>{{ v.voucher_type }}</td>
+          <td><a href="{{ url_for('vouchers.view', vid=v.id) }}">{{ v.voucher_no }}</a></td>
+          <td>₹ {{ "{:,.2f}".format(v.grand_total) }}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">No vouchers in this FY yet.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

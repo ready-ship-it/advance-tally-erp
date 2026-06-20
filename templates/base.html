@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Tally-ERP{% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+{% if current_user.is_authenticated and session.get('fy_year') %}
+<nav class="sidebar">
+  <div class="brand">Tally-ERP</div>
+  <div class="fy-chip">FY {{ session['fy_year'] }}-{{ (session['fy_year']+1) % 100 }}</div>
+  <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+  <div class="group">Inventory</div>
+  <a href="{{ url_for('inventory.products') }}">Products</a>
+  <a href="{{ url_for('inventory.categories') }}">Categories</a>
+  <a href="{{ url_for('inventory.parties') }}">Parties</a>
+  <div class="group">Vouchers</div>
+  <a href="{{ url_for('vouchers.list_vouchers', vtype='sales') }}">Sales</a>
+  <a href="{{ url_for('vouchers.list_vouchers', vtype='purchase') }}">Purchase</a>
+  <a href="{{ url_for('vouchers.list_vouchers', vtype='receipt') }}">Receipts</a>
+  <a href="{{ url_for('vouchers.list_vouchers', vtype='payment') }}">Payments</a>
+  <div class="group">Reports</div>
+  <a href="{{ url_for('reports.day_book') }}">Day Book</a>
+  <a href="{{ url_for('reports.ledger_list') }}">Ledgers</a>
+  <a href="{{ url_for('reports.gst_monthly') }}">GST Monthly</a>
+  <a href="{{ url_for('reports.pnl') }}">Profit &amp; Loss</a>
+  {% if current_user.is_admin() %}
+  <div class="group">Admin</div>
+  <a href="{{ url_for('backup.index') }}">Backup &amp; FTP</a>
+  <a href="{{ url_for('admin.settings') }}">Company Settings</a>
+  {% if current_user.is_master() %}
+  <a href="{{ url_for('admin.users') }}">Users &amp; Roles</a>
+  {% endif %}
+  {% endif %}
+  <div class="bottom">
+    <div class="who">{{ current_user.full_name or current_user.username }} <span class="role">{{ current_user.role }}</span></div>
+    <a href="{{ url_for('auth.select_year') }}" class="small">Change Year</a> ·
+    <a href="{{ url_for('auth.logout') }}" class="small">Logout</a>
+  </div>
+</nav>
+<main class="content">
+{% else %}
+<main class="content full">
+{% endif %}
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ "Edit" if product else "New" }} Product</h1>
+<form method="post" class="form-grid">
+  <label>SKU<input name="sku" required value="{{ product.sku if product else '' }}"></label>
+  <label>Barcode<input name="barcode" value="{{ product.barcode if product else '' }}" placeholder="Optional, scan or type"></label>
+  <label class="full">Name<input name="name" required value="{{ product.name if product else '' }}"></label>
+  <label class="full">Description<textarea name="description">{{ product.description if product else '' }}</textarea></label>
+  <label>Category
+    <select name="category_id" id="categorySel">
+      <option value="">— None —</option>
+      {% for c in categories %}<option value="{{c.id}}" data-hsn="{{c.default_hsn}}" data-gst="{{c.default_gst_rate}}"
+        {% if product and product.category_id == c.id %}selected{% endif %}>{{c.name}}</option>{% endfor %}
+    </select>
+  </label>
+  <label>HSN Code
+    <input name="hsn_code" id="hsnInput" value="{{ product.hsn_code if product else '' }}" placeholder="Auto from category or type">
+    <span class="hint"><a href="#" id="hsnSuggest">Suggest from name</a></span>
+  </label>
+  <label>GST Rate (%) <input name="gst_rate" id="gstInput" type="number" step="0.01" value="{{ product.gst_rate if product else 18 }}"></label>
+  <label>Unit <input name="unit" value="{{ product.unit if product else 'PCS' }}"></label>
+  <label>Purchase Price ₹ <input name="purchase_price" type="number" step="0.01" value="{{ product.purchase_price if product else 0 }}"></label>
+  <label>Sale Price ₹ <input name="sale_price" type="number" step="0.01" value="{{ product.sale_price if product else 0 }}"></label>
+  <label>Opening Stock <input name="stock_qty" type="number" step="0.001" value="{{ product.stock_qty if product else 0 }}"></label>
+  <label>Reorder Level <input name="reorder_level" type="number" step="0.001" value="{{ product.reorder_level if product else 0 }}"></label>
+  {% if product %}<label class="full"><input type="checkbox" name="is_active_flag" {% if product.is_active %}checked{% endif %}> Active</label>{% endif %}
+  <div class="full"><button class="btn primary">Save</button>
+    <a href="{{ url_for('inventory.products') }}" class="btn">Cancel</a></div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+const cat = document.getElementById('categorySel');
+cat.addEventListener('change', () => {
+  const opt = cat.selectedOptions[0];
+  if(opt && opt.dataset.hsn && !document.getElementById('hsnInput').value){
+    document.getElementById('hsnInput').value = opt.dataset.hsn;
+    document.getElementById('gstInput').value = opt.dataset.gst;
+  }
+});
+document.getElementById('hsnSuggest').addEventListener('click', e => {
+  e.preventDefault();
+  const name = document.querySelector('[name=name]').value;
+  if(!name) return;
+  fetch('{{ url_for("inventory.hsn_lookup") }}?q=' + encodeURIComponent(name))
+    .then(r => r.json()).then(rows => {
+      if(!rows.length) return alert('No HSN match found');
+      const first = rows[0];
+      document.getElementById('hsnInput').value = first.hsn;
+      document.getElementById('gstInput').value = first.gst;
+      alert('Suggested HSN ' + first.hsn + ' (' + first.name + ') · GST ' + first.gst + '%');
+    });
+});
+</script>
+{% endblock %}

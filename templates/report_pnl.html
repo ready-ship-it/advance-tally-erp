@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Profit &amp; Loss <span class="muted">FY {{ fy }}-{{ (fy+1)%100 }}</span></h1>
+<table class="data pnl">
+  <tr><td>Sales</td><td class="r">₹ {{ "{:,.2f}".format(sales) }}</td></tr>
+  <tr><td>Less: Purchase</td><td class="r">₹ {{ "{:,.2f}".format(purchase) }}</td></tr>
+  <tr><td>Less: Direct Expenses</td><td class="r">₹ {{ "{:,.2f}".format(direct_exp) }}</td></tr>
+  <tr class="totals-row"><td><b>Gross Profit</b></td><td class="r"><b>₹ {{ "{:,.2f}".format(gross) }}</b></td></tr>
+  <tr><td>Add: Indirect Incomes</td><td class="r">₹ {{ "{:,.2f}".format(indirect_inc) }}</td></tr>
+  <tr><td>Less: Indirect Expenses</td><td class="r">₹ {{ "{:,.2f}".format(indirect_exp) }}</td></tr>
+  <tr class="totals-row"><td><b>Net Profit</b></td><td class="r"><b>₹ {{ "{:,.2f}".format(net) }}</b></td></tr>
+</table>
+{% endblock %}

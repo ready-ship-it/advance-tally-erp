@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+  <h1>GST Monthly Summary <span class="muted">FY {{ fy }}-{{ (fy+1)%100 }}</span></h1>
+  <div>
+    <a class="btn primary" href="{{ url_for('reports.gst_export', fmt='xlsx') }}">Export XLSX</a>
+    <a class="btn primary" href="{{ url_for('reports.gst_export', fmt='pdf') }}">Export PDF</a>
+  </div>
+</div>
+<table class="data"><thead><tr>
+  <th>Period</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total GST</th><th>Grand Total</th>
+</tr></thead><tbody>
+{% for r in rows %}
+<tr>
+  <td>{{ r.period }}</td>
+  <td>{{ "{:,.2f}".format(r.taxable) }}</td>
+  <td>{{ "{:,.2f}".format(r.cgst) }}</td>
+  <td>{{ "{:,.2f}".format(r.sgst) }}</td>
+  <td>{{ "{:,.2f}".format(r.igst) }}</td>
+  <td>{{ "{:,.2f}".format(r.total_gst) }}</td>
+  <td>{{ "{:,.2f}".format(r.total) }}</td>
+</tr>
+{% else %}
+<tr><td colspan="7" class="muted">No sales in this FY.</td></tr>
+{% endfor %}
+{% if rows %}
+<tr class="totals-row">
+  <td>TOTAL</td>
+  <td>{{ "{:,.2f}".format(totals.taxable) }}</td>
+  <td>{{ "{:,.2f}".format(totals.cgst) }}</td>
+  <td>{{ "{:,.2f}".format(totals.sgst) }}</td>
+  <td>{{ "{:,.2f}".format(totals.igst) }}</td>
+  <td>{{ "{:,.2f}".format(totals.total_gst) }}</td>
+  <td>{{ "{:,.2f}".format(totals.total) }}</td>
+</tr>
+{% endif %}
+</tbody></table>
+{% endblock %}
