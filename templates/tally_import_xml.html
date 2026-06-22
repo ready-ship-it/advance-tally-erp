@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Import Tally XML - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Import Tally XML</h2>
+        <p>Upload a Tally-compatible XML file to import categories, products, parties, and ledgers.</p>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" class="form">
+        <div class="field">
+            <label>Select XML File</label>
+            <input type="file" name="file" accept=".xml" required>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Start Import</button>
+            <a href="{{ url_for('tally.migrate') }}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

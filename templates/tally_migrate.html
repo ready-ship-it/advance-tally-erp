@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Tally Migration - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Data Migration Tools</h1>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Tally XML Migration</h3>
+        <p>Export your data to Tally-compatible XML or import existing Tally data.</p>
+        <div class="actions" style="margin-top: 20px;">
+            <a href="{{ url_for('tally.export_xml') }}" class="btn primary">Export to Tally XML</a>
+            <a href="{{ url_for('tally.import_xml') }}" class="btn secondary">Import from Tally XML</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>CSV Import/Export</h3>
+        <p>Bulk import or export your master data using CSV files.</p>
+        <div class="actions" style="margin-top: 20px;">
+            <div style="margin-bottom: 10px;">
+                <strong>Export:</strong>
+                <a href="{{ url_for('tally.export_csv', export_type='products') }}" class="btn small">Products</a>
+                <a href="{{ url_for('tally.export_csv', export_type='parties') }}" class="btn small">Parties</a>
+            </div>
+            <div>
+                <strong>Import:</strong>
+                <a href="{{ url_for('tally.import_csv', import_type='products') }}" class="btn small secondary">Products</a>
+                <a href="{{ url_for('tally.import_csv', import_type='parties') }}" class="btn small secondary">Parties</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h3>Sample Templates</h3>
+    <p>Download sample CSV templates for bulk importing data.</p>
+    <div class="actions" style="margin-top: 10px;">
+        <a href="{{ url_for('tally.sample_csv', csv_type='products') }}" class="btn small">Product Template</a>
+        <a href="{{ url_for('tally.sample_csv', csv_type='parties') }}" class="btn small">Party Template</a>
+    </div>
+</div>
+{% endblock %}

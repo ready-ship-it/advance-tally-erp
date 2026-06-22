@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Send Invoice - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Send Invoice via Email</h2>
+        <p>Invoice: {{ voucher.voucher_no }} | Amount: ₹{{ "{:,.2f}".format(voucher.grand_total) }}</p>
+    </div>
+    
+    <form method="POST" class="form">
+        <div class="field">
+            <label>Recipient Email</label>
+            <input type="email" name="recipient_email" value="{{ recipient_email }}" required>
+        </div>
+        
+        <div class="field">
+            <label>CC (Optional, comma separated)</label>
+            <input type="text" name="cc" placeholder="cc@example.com, boss@example.com">
+        </div>
+        
+        <div class="field">
+            <label>Subject</label>
+            <input type="text" name="subject" value="{{ default_subject }}" required>
+        </div>
+        
+        <div class="field">
+            <label>Message Body</label>
+            <textarea name="message" rows="10" required>Dear {{ voucher.party.name if voucher.party else 'Valued Customer' }},
+
+Please find attached your invoice {{ voucher.voucher_no }} dated {{ voucher.voucher_date.strftime('%d-%m-%Y') }}.
+
+Invoice Details:
+- Invoice Number: {{ voucher.voucher_no }}
+- Date: {{ voucher.voucher_date.strftime('%d-%m-%Y') }}
+- Amount: ₹{{ "{:,.2f}".format(voucher.grand_total) }}
+
+Thank you for your business!
+
+Best regards,
+{{ current_user.full_name or 'Accounts Team' }}</textarea>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Send Invoice PDF</button>
+            <a href="{{ url_for('vouchers.view', vid=voucher.id) }}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Import {{ import_type|capitalize }} - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Import {{ import_type|capitalize }} via CSV</h2>
+        <p>Upload a CSV file to bulk import {{ import_type }}.</p>
+    </div>
+    
+    <div class="alert info">
+        Make sure your CSV follows the required format. 
+        <a href="{{ url_for('tally.sample_csv', csv_type=import_type) }}">Download Template</a>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" class="form">
+        <div class="field">
+            <label>Select CSV File</label>
+            <input type="file" name="file" accept=".csv" required>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Start Import</button>
+            <a href="{{ url_for('tally.migrate') }}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

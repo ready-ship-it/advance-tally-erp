@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Email Settings - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Email SMTP Settings</h2>
+        <p>Configure your SMTP server for sending invoices and reminders.</p>
+    </div>
+    
+    <form method="POST" class="form">
+        <div class="field">
+            <label>SMTP Server</label>
+            <input type="text" name="email_smtp_server" value="{{ settings.get('email_smtp_server', 'smtp.gmail.com') }}" placeholder="e.g. smtp.gmail.com" required>
+        </div>
+        
+        <div class="field">
+            <label>SMTP Port</label>
+            <input type="number" name="email_smtp_port" value="{{ settings.get('email_smtp_port', '587') }}" placeholder="e.g. 587" required>
+        </div>
+        
+        <div class="field">
+            <label>Sender Email</label>
+            <input type="email" name="email_sender" value="{{ settings.get('email_sender', '') }}" placeholder="your-email@gmail.com" required>
+        </div>
+        
+        <div class="field">
+            <label>Sender Password / App Password</label>
+            <input type="password" name="email_password" value="{{ settings.get('email_password', '') }}" placeholder="Your SMTP password">
+            <p class="help">For Gmail, use an "App Password" if 2FA is enabled.</p>
+        </div>
+        
+        <div class="field">
+            <label>Use TLS</label>
+            <select name="email_use_tls">
+                <option value="true" {% if settings.get('email_use_tls', 'true') == 'true' %}selected{% endif %}>Yes</option>
+                <option value="false" {% if settings.get('email_use_tls', 'true') == 'false' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Save Settings</button>
+            <a href="{{ url_for('email.test_email') }}" class="btn secondary">Send Test Email</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

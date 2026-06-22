@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Test Email - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Test Email Configuration</h2>
+        <p>Send a test email to verify your SMTP settings.</p>
+    </div>
+    
+    <form method="POST" class="form">
+        <div class="field">
+            <label>Recipient Email</label>
+            <input type="email" name="recipient_email" placeholder="recipient@example.com" required>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Send Test Email</button>
+            <a href="{{ url_for('email.email_settings') }}" class="btn secondary">Back to Settings</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
