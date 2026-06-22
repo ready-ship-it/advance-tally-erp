@@ -9,6 +9,9 @@ from .warehouse import (
 from .bank import (
     BankAccount, BankStatement, BankReconciliation, OutstandingCheck, DepositInTransit, BankCharge,
 )
+from .hsn import (
+    HSNMaster, HSNSearchLog,
+)
 
 __all__ = [
     "User", "ROLE_MASTER", "ROLE_ADMIN", "ROLE_USER",
@@ -17,4 +20,5 @@ __all__ = [
     "Setting", "BackupLog",
     "Warehouse", "WarehouseStock", "StockMovement", "StockBin", "BinStock",
     "BankAccount", "BankStatement", "BankReconciliation", "OutstandingCheck", "DepositInTransit", "BankCharge",
+    "HSNMaster", "HSNSearchLog",
 ]
