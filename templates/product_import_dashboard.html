@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Product Import - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Product Import</h1>
+    <p>Import products from retailers or upload CSV files</p>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Sample Products</h3>
+        <p>Load sample products for testing (Laptops, GPUs, Monitors, etc.)</p>
+        <button onclick="importSample()" class="btn primary">Import Sample Products</button>
+    </div>
+
+    <div class="card">
+        <h3>CSV Import</h3>
+        <p>Upload a CSV file with your product data</p>
+        <a href="{{ url_for('product_import.import_csv') }}" class="btn primary">Upload CSV</a>
+        <a href="{{ url_for('product_import.download_csv_template') }}" class="btn secondary">Download Template</a>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Khosla Electronics</h3>
+        <p>Import products from Khosla Electronics website</p>
+        <a href="{{ url_for('product_import.import_khosla') }}" class="btn primary">Import from Khosla</a>
+    </div>
+
+    <div class="card">
+        <h3>MDComputers</h3>
+        <p>Import products from MDComputers.in</p>
+        <a href="{{ url_for('product_import.import_mdcomputers') }}" class="btn primary">Import from MDComputers</a>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Vedanta Computers</h3>
+        <p>Import products from Vedanta Computers</p>
+        <a href="{{ url_for('product_import.import_vedanta') }}" class="btn primary">Import from Vedanta</a>
+    </div>
+
+    <div class="card">
+        <h3>Flipkart</h3>
+        <p>Import products from Flipkart</p>
+        <a href="{{ url_for('product_import.import_flipkart') }}" class="btn primary">Import from Flipkart</a>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Amazon</h3>
+        <p>Import products from Amazon.in</p>
+        <a href="{{ url_for('product_import.import_amazon') }}" class="btn primary">Import from Amazon</a>
+    </div>
+
+    <div class="card">
+        <h3>HSN Master</h3>
+        <p>View and manage HSN codes for products</p>
+        <a href="{{ url_for('hsn.hsn_master') }}" class="btn primary">HSN Master</a>
+    </div>
+</div>
+
+<script>
+function importSample() {
+    if (confirm('Import sample products? This will add test products to your database.')) {
+        fetch('{{ url_for("product_import.import_sample") }}')
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                location.reload();
+            })
+            .catch(e => alert('Error: ' + e));
+    }
+}
+</script>
+{% endblock %}

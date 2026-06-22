@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}HSN Master - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>HSN Master</h1>
+    <div class="actions">
+        <a href="{{ url_for('hsn.add_hsn') }}" class="btn primary">Add HSN Code</a>
+        <a href="{{ url_for('hsn.export_csv') }}" class="btn secondary">Export CSV</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="filter-row">
+        <form method="GET" class="form-inline">
+            <input type="text" name="search" placeholder="Search HSN code or description..." value="{{ search_term }}" style="flex: 1; margin-right: 10px;">
+            
+            <select name="category" style="margin-right: 10px;">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="btn primary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>HSN Code</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>GST Rate</th>
+                <th>CESS Rate</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for hsn in hsn_codes %}
+            <tr>
+                <td><strong>{{ hsn.hsn_code }}</strong></td>
+                <td>{{ hsn.description }}</td>
+                <td>{{ hsn.category }}</td>
+                <td>{{ hsn.gst_rate }}%</td>
+                <td>{{ hsn.cess_rate }}%</td>
+                <td>
+                    <a href="{{ url_for('hsn.edit_hsn', hsn_code=hsn.hsn_code) }}" class="btn small">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not hsn_codes %}
+    <p style="text-align: center; color: #999;">No HSN codes found</p>
+    {% endif %}
+</div>
+{% endblock %}

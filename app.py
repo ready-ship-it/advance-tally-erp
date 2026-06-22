@@ -35,6 +35,8 @@ def create_app(config_class=Config) -> Flask:
     from routes.bank import bp as bank_bp
     from routes.tally import bp as tally_bp
     from routes.email import bp as email_bp
+    from routes.hsn import bp as hsn_bp
+    from routes.product_import import bp as product_import_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
@@ -47,6 +49,8 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(bank_bp)
     app.register_blueprint(tally_bp)
     app.register_blueprint(email_bp)
+    app.register_blueprint(hsn_bp)
+    app.register_blueprint(product_import_bp)
 
     @app.route("/")
     def root():

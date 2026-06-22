@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Import Products from CSV - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Import Products from CSV</h2>
+        <p>Upload a CSV file to bulk import products with HSN codes and pricing.</p>
+    </div>
+    
+    <div class="alert info">
+        <strong>CSV Format:</strong> Your file should have columns: sku, name, category, hsn_code, gst_rate, unit, purchase_price, sale_price, description
+        <br><a href="{{ url_for('product_import.download_csv_template') }}">Download Template</a>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" class="form">
+        <div class="field">
+            <label>Select CSV File</label>
+            <input type="file" name="file" accept=".csv" required>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Import Products</button>
+            <a href="{{ url_for('product_import.import_dashboard') }}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+    <h3>CSV Format Example</h3>
+    <pre>sku,name,category,hsn_code,gst_rate,unit,purchase_price,sale_price,description
+LAPTOP001,Dell Inspiron 15,Computers,8471,18,PCS,32000,45000,15-inch Full HD Display
+GPU001,NVIDIA RTX 4060,Computer Parts,8473,18,PCS,18000,25000,8GB GDDR6 Memory
+MONITOR001,LG 24 inch,Display,8528,18,PCS,8500,12000,Full HD 1920x1080</pre>
+</div>
+{% endblock %}
