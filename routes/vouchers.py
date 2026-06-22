@@ -148,6 +148,7 @@ def new_invoice(vtype):
             narration=data.get("narration", ""),
             is_interstate=is_interstate,
             payment_mode=data.get("payment_mode", "credit"),
+            transaction_id=data.get("transaction_id", ""),
             created_by=current_user.id,
         )
         sub = tax = cgst = sgst = igst = 0.0

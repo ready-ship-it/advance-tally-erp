@@ -10,7 +10,15 @@
     </select>
   </label>
   <label>Payment Mode
-    <select name="payment_mode"><option value="credit">Credit</option><option value="cash">Cash</option><option value="bank">Bank</option></select>
+    <select name="payment_mode" id="paymentMode">
+      <option value="credit">Credit</option>
+      <option value="cash">Cash</option>
+      <option value="bank">Bank</option>
+      <option value="online">Online</option>
+    </select>
+  </label>
+  <label id="transIdRow" style="display:none;">Transaction ID
+    <input name="transaction_id" placeholder="UPI / Ref No.">
   </label>
   <label><input type="checkbox" id="interState" name="is_interstate"> Inter-state (IGST instead of CGST+SGST)</label>
   <label class="full">Reference<input name="reference"></label>
@@ -131,6 +139,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   if(!items.length) return alert('Add at least one item');
   const body = Object.fromEntries(fd.entries());
   body.is_interstate = document.getElementById('interState').checked;
+  body.transaction_id = document.querySelector('input[name="transaction_id"]').value;
   body.items = items;
   const r = await fetch(window.location.href, {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
@@ -138,6 +147,12 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const d = await r.json();
   if(d.ok){ window.location = '{{ url_for("vouchers.list_vouchers", vtype=vtype) }}'; }
   else alert('Save failed');
+});
+
+// Toggle Transaction ID field based on payment mode
+document.getElementById('paymentMode').addEventListener('change', function() {
+  const transRow = document.getElementById('transIdRow');
+  transRow.style.display = (this.value === 'online') ? 'block' : 'none';
 });
 
 // Datalist for product search
