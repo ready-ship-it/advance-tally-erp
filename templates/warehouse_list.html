@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Warehouses - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Warehouses / Godowns</h1>
+    <div class="actions">
+        <a href="{{ url_for('warehouse.new_warehouse') }}" class="btn primary">+ New Warehouse</a>
+        <a href="{{ url_for('warehouse.low_stock_alert') }}" class="btn secondary">Low Stock Alerts</a>
+        <a href="{{ url_for('warehouse.transfer_stock_ui') }}" class="btn secondary">Transfer Stock</a>
+    </div>
+</div>
+
+<div class="grid">
+    {% for w in warehouses %}
+    <div class="card warehouse-card">
+        <h3>{{ w.name }} ({{ w.code }})</h3>
+        <p class="muted">{{ w.location or 'No location specified' }}</p>
+        <div class="actions">
+            <a href="{{ url_for('warehouse.view_warehouse', wid=w.id) }}" class="btn small">View Stock</a>
+            <a href="{{ url_for('warehouse.edit_warehouse', wid=w.id) }}" class="btn small">Edit</a>
+            <a href="{{ url_for('warehouse.stock_movements', wid=w.id) }}" class="btn small">History</a>
+        </div>
+    </div>
+    {% endfor %}
+    
+    {% if not warehouses %}
+    <div class="card full">
+        <p style="text-align: center; color: #999; padding: 20px;">No warehouses found. Create your first godown to start tracking stock.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

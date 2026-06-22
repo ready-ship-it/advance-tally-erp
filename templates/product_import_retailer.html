@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Import from {{ retailer }} - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>Import Products from {{ retailer }}</h2>
+        <p>Enter a category URL from {{ retailer }} website to automatically import products.</p>
+    </div>
+    
+    <div class="alert info">
+        <strong>How it works:</strong> Copy the URL of a category page (e.g., Laptops, Monitors) from {{ retailer }} and paste it below. The system will fetch product names, prices, and descriptions.
+    </div>
+    
+    <form id="importForm" class="form">
+        <div class="field">
+            <label>{{ retailer }} Category URL</label>
+            <input type="url" name="category_url" id="categoryUrl" required placeholder="https://www.{{ retailer.lower().replace(' ', '') }}.com/category/..." style="width: 100%;">
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary" id="importBtn">Start Import</button>
+            <a href="{{ url_for('product_import.import_dashboard') }}" class="btn secondary">Back to Dashboard</a>
+        </div>
+    </form>
+    
+    <div id="status" style="display:none; margin-top: 20px;" class="card">
+        <h3>Import Status</h3>
+        <div id="loading" style="text-align: center; padding: 20px;">
+            <p>Scraping products... Please wait, this may take a minute.</p>
+        </div>
+        <div id="results" style="display:none;">
+            <p id="resultMsg" class="alert success"></p>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Imported</th>
+                        <th>Duplicates</th>
+                        <th>Errors</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="resImported">0</td>
+                        <td id="resDuplicates">0</td>
+                        <td id="resErrors">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('importForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('importBtn');
+    const status = document.getElementById('status');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    const url = document.getElementById('categoryUrl').value;
+    
+    btn.disabled = true;
+    status.style.display = 'block';
+    loading.style.display = 'block';
+    results.style.display = 'none';
+    
+    try {
+        const formData = new FormData();
+        formData.append('category_url', url);
+        
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        loading.style.display = 'none';
+        results.style.display = 'block';
+        
+        if (data.success) {
+            document.getElementById('resultMsg').textContent = data.message;
+            document.getElementById('resImported').textContent = data.result.imported;
+            document.getElementById('resDuplicates').textContent = data.result.duplicates;
+            document.getElementById('resErrors').textContent = data.result.errors;
+        } else {
+            document.getElementById('resultMsg').className = 'alert danger';
+            document.getElementById('resultMsg').textContent = data.message;
+        }
+    } catch (err) {
+        loading.style.display = 'none';
+        results.style.display = 'block';
+        document.getElementById('resultMsg').className = 'alert danger';
+        document.getElementById('resultMsg').textContent = 'An error occurred during import: ' + err.message;
+    } finally {
+        btn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

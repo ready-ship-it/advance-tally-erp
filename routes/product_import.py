@@ -67,7 +67,7 @@ def import_khosla():
                 "message": f"Error: {str(e)}"
             }), 400
     
-    return render_template("product_import_khosla.html")
+    return render_template("product_import_retailer.html", retailer="Khosla Electronics")
 
 
 @bp.route("/mdcomputers", methods=["GET", "POST"])
@@ -99,7 +99,7 @@ def import_mdcomputers():
                 "message": f"Error: {str(e)}"
             }), 400
     
-    return render_template("product_import_mdcomputers.html")
+    return render_template("product_import_retailer.html", retailer="MDComputers")
 
 
 @bp.route("/vedanta", methods=["GET", "POST"])
@@ -131,7 +131,7 @@ def import_vedanta():
                 "message": f"Error: {str(e)}"
             }), 400
     
-    return render_template("product_import_vedanta.html")
+    return render_template("product_import_retailer.html", retailer="Vedanta Computers")
 
 
 @bp.route("/flipkart", methods=["GET", "POST"])
@@ -163,7 +163,7 @@ def import_flipkart():
                 "message": f"Error: {str(e)}"
             }), 400
     
-    return render_template("product_import_flipkart.html")
+    return render_template("product_import_retailer.html", retailer="Flipkart")
 
 
 @bp.route("/amazon", methods=["GET", "POST"])
@@ -195,7 +195,7 @@ def import_amazon():
                 "message": f"Error: {str(e)}"
             }), 400
     
-    return render_template("product_import_amazon.html")
+    return render_template("product_import_retailer.html", retailer="Amazon")
 
 
 @bp.route("/csv", methods=["GET", "POST"])

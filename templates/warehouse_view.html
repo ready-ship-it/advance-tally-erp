@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ warehouse.name }} - Stock Summary{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>{{ warehouse.name }} ({{ warehouse.code }})</h1>
+    <div class="actions">
+        <button class="btn primary" onclick="document.getElementById('addStockModal').style.display='block'">+ Add Stock</button>
+        <button class="btn secondary" onclick="document.getElementById('adjustStockModal').style.display='block'">Adjust Stock</button>
+        <a href="{{ url_for('warehouse.stock_movements', wid=warehouse.id) }}" class="btn secondary">View History</a>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h3>Stock Summary</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Total Qty</th>
+                    <th>Available</th>
+                    <th>Reserved</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary.items %}
+                <tr>
+                    <td><strong>{{ item.product_name }}</strong></td>
+                    <td>{{ item.quantity }} {{ item.unit }}</td>
+                    <td><span class="badge {{ 'success' if item.available > 0 else 'danger' }}">{{ item.available }}</span></td>
+                    <td>{{ item.reserved }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not summary.items %}
+        <p class="muted" style="text-align:center; padding: 20px;">No stock currently in this warehouse.</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3>Low Stock Alerts</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Current</th>
+                    <th>Reorder Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in low_stock %}
+                <tr>
+                    <td><span class="text-danger">{{ item.product_name }}</span></td>
+                    <td>{{ item.current_qty }}</td>
+                    <td>{{ item.reorder_level }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if not low_stock %}
+        <p class="text-success" style="text-align:center; padding: 20px;">All items are above reorder levels.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modals for Add/Adjust Stock would go here -->
+{% endblock %}

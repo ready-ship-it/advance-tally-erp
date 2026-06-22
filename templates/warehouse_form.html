@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if warehouse else 'New' }} Warehouse - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="header">
+        <h2>{{ 'Edit' if warehouse else 'New' }} Warehouse / Godown</h2>
+    </div>
+    
+    <form method="POST" class="form">
+        <div class="field">
+            <label>Warehouse Name</label>
+            <input type="text" name="name" value="{{ warehouse.name if warehouse else '' }}" required placeholder="e.g. Main Godown">
+        </div>
+        
+        <div class="field">
+            <label>Warehouse Code</label>
+            <input type="text" name="code" value="{{ warehouse.code if warehouse else '' }}" required placeholder="e.g. WH-001" {{ 'readonly' if warehouse else '' }}>
+        </div>
+        
+        <div class="field">
+            <label>Location / Address</label>
+            <textarea name="location" placeholder="Full address of the warehouse">{{ warehouse.location if warehouse else '' }}</textarea>
+        </div>
+        
+        {% if warehouse %}
+        <div class="field checkbox">
+            <label>
+                <input type="checkbox" name="is_active" {{ 'checked' if warehouse.is_active else '' }}> Active
+            </label>
+        </div>
+        {% endif %}
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Save Warehouse</button>
+            <a href="{{ url_for('warehouse.list_warehouses') }}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
