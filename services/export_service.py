@@ -71,3 +71,102 @@ def gst_summary_to_pdf(rows, fy):
     doc.build(elems)
     buf.seek(0)
     return buf
+
+def invoice_to_pdf(voucher, settings, amt_words):
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4)
+    styles = getSampleStyleSheet()
+    
+    # Custom styles
+    header_style = styles["Heading1"]
+    normal_style = styles["Normal"]
+    small_style = styles["Normal"].clone("Small")
+    small_style.fontSize = 8
+    
+    elems = []
+    
+    # Company Letterhead
+    company_name = settings.get("company_name", "Your Company Name")
+    company_address = settings.get("company_address", "Address Line 1\nAddress Line 2")
+    company_gstin = settings.get("company_gstin", "GSTIN: 00XXXXXXXXXXXXX")
+    
+    elems.append(Paragraph(f"<b>{company_name}</b>", header_style))
+    elems.append(Paragraph(company_address.replace("\n", "<br/>"), normal_style))
+    elems.append(Paragraph(f"GSTIN: {company_gstin}", normal_style))
+    elems.append(Spacer(1, 12))
+    
+    elems.append(Paragraph(f"<b>TAX INVOICE</b>", styles["Heading2"]))
+    elems.append(Spacer(1, 12))
+    
+    # Invoice Details Table
+    party = voucher.party
+    invoice_data = [
+        [f"Invoice No: {voucher.voucher_no}", f"Date: {voucher.voucher_date}"],
+        [f"Bill To: {party.name}", f"State: {party.state} ({party.state_code})"],
+        [party.address.replace("\n", " "), f"GSTIN: {party.gstin}"]
+    ]
+    t_details = Table(invoice_data, colWidths=[250, 200])
+    t_details.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+    ]))
+    elems.append(t_details)
+    elems.append(Spacer(1, 12))
+    
+    # Items Table
+    item_headers = ["SN", "Description", "HSN", "Qty", "Rate", "Taxable", "GST %", "GST Amt", "Total"]
+    item_data = [item_headers]
+    for i, item in enumerate(voucher.items, 1):
+        gst_amt = item.cgst_amount + item.sgst_amount + item.igst_amount
+        item_data.append([
+            i,
+            item.description or (item.product.name if item.product else ""),
+            item.hsn_code or "",
+            f"{item.qty} {item.unit}",
+            f"{item.rate:,.2f}",
+            f"{item.taxable_value:,.2f}",
+            f"{item.gst_rate}%",
+            f"{gst_amt:,.2f}",
+            f"{item.line_total:,.2f}"
+        ])
+    
+    # Totals
+    item_data.append(["", "Total", "", "", "", f"{voucher.taxable_value:,.2f}", "", 
+                      f"{(voucher.cgst_amount + voucher.sgst_amount + voucher.igst_amount):,.2f}", 
+                      f"{voucher.grand_total:,.2f}"])
+    
+    t_items = Table(item_data, colWidths=[25, 150, 45, 40, 50, 60, 40, 50, 60])
+    t_items.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('ALIGN', (5, 1), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    elems.append(t_items)
+    elems.append(Spacer(1, 12))
+    
+    # Amount in words
+    elems.append(Paragraph(f"<b>Amount in Words:</b> {amt_words}", normal_style))
+    elems.append(Spacer(1, 24))
+    
+    # Footer / Signature
+    footer_data = [
+        ["Declaration:", f"For {company_name}"],
+        ["We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.", "\n\n\nAuthorized Signatory"]
+    ]
+    t_footer = Table(footer_data, colWidths=[300, 150])
+    t_footer.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (1, 0), (1, 1), 'RIGHT'),
+        ('FONTSIZE', (0, 1), (0, 1), 8),
+    ]))
+    elems.append(t_footer)
+    
+    doc.build(elems)
+    buf.seek(0)
+    return buf

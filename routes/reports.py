@@ -1,10 +1,12 @@
 from datetime import date
 from io import BytesIO
+import json
 from sqlalchemy import func, extract
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, render_template, request, send_file, jsonify
 from extensions import db
-from models import Voucher, Ledger, LedgerEntry
+from models import Voucher, Ledger, LedgerEntry, Setting
 from services.export_service import gst_summary_to_xlsx, gst_summary_to_pdf
+from services.gstr_service import get_gstr1_data, get_gstr2_data, get_gstr3b_data, get_gstr9_data, get_eway_bill_data
 from utils import login_required_full, current_fy, fy_range
 
 bp = Blueprint("reports", __name__)
@@ -130,3 +132,108 @@ def pnl():
                            sales=sales, purchase=purchase, direct_exp=direct_exp,
                            indirect_exp=indirect_exp, indirect_inc=indirect_inc,
                            gross=gross, net=net, fy=fy)
+
+@bp.route("/gstr1/export")
+@login_required_full
+def gstr1_export():
+    """Export GSTR-1 (Outward Supplies) as JSON."""
+    fy = current_fy()
+    month = request.args.get("month", type=int)
+    
+    gstr1_data = get_gstr1_data(fy, month)
+    
+    settings = {s.key: s.value for s in Setting.query.all()}
+    gstr1_data["gstin"] = settings.get("company_gstin", "")
+    
+    return send_file(
+        BytesIO(json.dumps(gstr1_data, indent=2).encode()),
+        as_attachment=True,
+        download_name=f"GSTR1_FY{fy}_{month or 'Annual'}.json",
+        mimetype="application/json"
+    )
+
+
+@bp.route("/gstr2/export")
+@login_required_full
+def gstr2_export():
+    """Export GSTR-2 (Inward Supplies) as JSON."""
+    fy = current_fy()
+    month = request.args.get("month", type=int)
+    
+    gstr2_data = get_gstr2_data(fy, month)
+    
+    settings = {s.key: s.value for s in Setting.query.all()}
+    gstr2_data["gstin"] = settings.get("company_gstin", "")
+    
+    return send_file(
+        BytesIO(json.dumps(gstr2_data, indent=2).encode()),
+        as_attachment=True,
+        download_name=f"GSTR2_FY{fy}_{month or 'Annual'}.json",
+        mimetype="application/json"
+    )
+
+
+@bp.route("/gstr3b/export")
+@login_required_full
+def gstr3b_export():
+    """Export GSTR-3B (Monthly Return) as JSON."""
+    fy = current_fy()
+    month = request.args.get("month", type=int, default=1)
+    
+    if month < 1 or month > 12:
+        return jsonify({"error": "Invalid month"}), 400
+    
+    gstr3b_data = get_gstr3b_data(fy, month)
+    
+    settings = {s.key: s.value for s in Setting.query.all()}
+    gstr3b_data["gstin"] = settings.get("company_gstin", "")
+    
+    return send_file(
+        BytesIO(json.dumps(gstr3b_data, indent=2).encode()),
+        as_attachment=True,
+        download_name=f"GSTR3B_FY{fy}_{month:02d}.json",
+        mimetype="application/json"
+    )
+
+
+@bp.route("/gstr9/export")
+@login_required_full
+def gstr9_export():
+    """Export GSTR-9 (Annual Return) as JSON."""
+    fy = current_fy()
+    
+    gstr9_data = get_gstr9_data(fy)
+    
+    settings = {s.key: s.value for s in Setting.query.all()}
+    gstr9_data["gstin"] = settings.get("company_gstin", "")
+    
+    return send_file(
+        BytesIO(json.dumps(gstr9_data, indent=2).encode()),
+        as_attachment=True,
+        download_name=f"GSTR9_FY{fy}-{fy+1}.json",
+        mimetype="application/json"
+    )
+
+
+@bp.route("/eway-bill/<int:vid>/export")
+@login_required_full
+def eway_bill_export(vid):
+    """Export E-Way Bill JSON for a specific voucher."""
+    eway_data = get_eway_bill_data(vid)
+    
+    if not eway_data:
+        return jsonify({"error": "Voucher not found"}), 404
+    
+    if "error" in eway_data:
+        return jsonify(eway_data), 400
+    
+    settings = {s.key: s.value for s in Setting.query.all()}
+    eway_data["gstin"] = settings.get("company_gstin", "")
+    
+    voucher = Voucher.query.get(vid)
+    return send_file(
+        BytesIO(json.dumps(eway_data, indent=2).encode()),
+        as_attachment=True,
+        download_name=f"EWayBill_{voucher.voucher_no}.json",
+        mimetype="application/json"
+    )

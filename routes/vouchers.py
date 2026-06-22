@@ -1,9 +1,12 @@
 from datetime import date, datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort, send_file
 from flask_login import current_user
 from extensions import db
-from models import Voucher, VoucherItem, Product, Party, Ledger, LedgerEntry
+from models import Voucher, VoucherItem, Product, Party, Ledger, LedgerEntry, Setting
 from utils import login_required_full, current_fy, fy_range
+from num_to_words import number_to_words_indian
+from services.export_service import invoice_to_pdf
+import io
 
 bp = Blueprint("vouchers", __name__)
 
@@ -226,4 +229,21 @@ def new_cash_voucher(vtype):
 @login_required_full
 def view(vid):
     v = Voucher.query.get_or_404(vid)
-    return render_template("voucher_view.html", v=v)
+    amt_words = number_to_words_indian(v.grand_total)
+    return render_template("voucher_view.html", v=v, amt_words=amt_words)
+
+
+@bp.route("/pdf/<int:vid>")
+@login_required_full
+def export_pdf(vid):
+    v = Voucher.query.get_or_404(vid)
+    settings = {s.key: s.value for s in Setting.query.all()}
+    amt_words = number_to_words_indian(v.grand_total)
+    
+    pdf_buf = invoice_to_pdf(v, settings, amt_words)
+    return send_file(
+        pdf_buf,
+        as_attachment=True,
+        download_name=f"Invoice_{v.voucher_no}.pdf",
+        mimetype="application/pdf"
+    )
