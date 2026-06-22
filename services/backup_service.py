@@ -145,8 +145,29 @@ def restore_from_file(path: str):
 
 # ---------- Scheduler ----------
 def start_scheduler(app):
-    """Register APScheduler job for auto backup every N hours."""
+    """Register APScheduler job for auto backup every N hours.
+
+    Multi-worker safety: only the first gunicorn worker should run the
+    scheduler. We use a file lock on the backup dir so workers 2..N skip it.
+    """
+    import socket
     from apscheduler.schedulers.background import BackgroundScheduler
+
+    lock_path = os.path.join(BACKUP_DIR, ".scheduler.lock")
+    try:
+        # O_EXCL: fail if file exists. Stale locks older than 24h are ignored.
+        if os.path.exists(lock_path):
+            age = dt.datetime.now().timestamp() - os.path.getmtime(lock_path)
+            if age < 86400:
+                app.logger.info("Backup scheduler already started by another worker; skipping.")
+                return None
+            os.remove(lock_path)
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        os.write(fd, f"pid={os.getpid()} host={socket.gethostname()}".encode())
+        os.close(fd)
+    except FileExistsError:
+        app.logger.info("Backup scheduler lock already held; this worker won't schedule.")
+        return None
 
     sched = BackgroundScheduler(daemon=True)
 
@@ -161,4 +182,11 @@ def start_scheduler(app):
                   id="auto_backup", replace_existing=True)
     sched.start()
     app.extensions["backup_scheduler"] = sched
+
+    # Refresh lock mtime hourly so it doesn't go stale on long-running pods
+    def _touch():
+        try: os.utime(lock_path, None)
+        except OSError: pass
+    sched.add_job(_touch, "interval", hours=1, id="lock_touch", replace_existing=True)
+
     return sched

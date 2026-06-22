@@ -2,8 +2,14 @@
 {% block content %}
 <h1>{{ "Edit" if product else "New" }} Product</h1>
 <form method="post" class="form-grid">
-  <label>SKU<input name="sku" required value="{{ product.sku if product else '' }}"></label>
-  <label>Barcode<input name="barcode" value="{{ product.barcode if product else '' }}" placeholder="Optional, scan or type"></label>
+  <label>SKU<input name="sku" id="skuInput" required value="{{ product.sku if product else '' }}"></label>
+  <label>Barcode
+    <div style="display:flex; gap:6px;">
+      <input name="barcode" id="barcodeInput" value="{{ product.barcode if product else '' }}" placeholder="Scan or type barcode" style="flex:1;">
+      <button type="button" class="btn" id="scanBtn" title="Click then scan with USB barcode scanner">Scan</button>
+    </div>
+    <span class="hint">USB scanners work as plug-and-play keyboards — just click <b>Scan</b> (or click in the box) and scan. The code + Enter is typed automatically.</span>
+  </label>
   <label class="full">Name<input name="name" required value="{{ product.name if product else '' }}"></label>
   <label class="full">Description<textarea name="description">{{ product.description if product else '' }}</textarea></label>
   <label>Category
@@ -31,25 +37,48 @@
 {% block scripts %}
 <script>
 const cat = document.getElementById('categorySel');
+const hsnInput = document.getElementById('hsnInput');
+const gstInput = document.getElementById('gstInput');
+
+// Always sync HSN + GST when the user changes category.
+// (Empty category clears the auto-fill so user knows to type one.)
 cat.addEventListener('change', () => {
   const opt = cat.selectedOptions[0];
-  if(opt && opt.dataset.hsn && !document.getElementById('hsnInput').value){
-    document.getElementById('hsnInput').value = opt.dataset.hsn;
-    document.getElementById('gstInput').value = opt.dataset.gst;
+  if(opt && opt.value){
+    if(opt.dataset.hsn) hsnInput.value = opt.dataset.hsn;
+    if(opt.dataset.gst) gstInput.value = opt.dataset.gst;
   }
 });
+
 document.getElementById('hsnSuggest').addEventListener('click', e => {
   e.preventDefault();
   const name = document.querySelector('[name=name]').value;
-  if(!name) return;
+  if(!name) return alert('Enter the product name first');
   fetch('{{ url_for("inventory.hsn_lookup") }}?q=' + encodeURIComponent(name))
     .then(r => r.json()).then(rows => {
-      if(!rows.length) return alert('No HSN match found');
+      if(!rows.length) return alert('No HSN match found for "' + name + '"');
       const first = rows[0];
-      document.getElementById('hsnInput').value = first.hsn;
-      document.getElementById('gstInput').value = first.gst;
+      hsnInput.value = first.hsn;
+      gstInput.value = first.gst;
       alert('Suggested HSN ' + first.hsn + ' (' + first.name + ') · GST ' + first.gst + '%');
     });
+});
+
+// Barcode scanner UX: click "Scan" → focus the barcode field so the
+// scanner's keystrokes go straight into it.
+const bc = document.getElementById('barcodeInput');
+document.getElementById('scanBtn').addEventListener('click', () => {
+  bc.focus(); bc.select();
+});
+// Most USB scanners append Enter — prevent it submitting the form prematurely.
+bc.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    // If SKU is empty, copy barcode there as a default SKU
+    const sku = document.getElementById('skuInput');
+    if(sku && !sku.value){ sku.value = bc.value; }
+    document.querySelector('[name=name]').focus();
+  }
 });
 </script>
 {% endblock %}
