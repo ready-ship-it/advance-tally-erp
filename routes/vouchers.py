@@ -80,8 +80,9 @@ def _post_double_entry(v: Voucher):
         db.session.add(LedgerEntry(voucher_id=v.id, ledger_id=party_l.id, entry_date=v.voucher_date,
                                    fy_year=v.fy_year, credit=v.grand_total, narration=v.voucher_no))
     elif v.voucher_type == "receipt":
-        cash_l = _ledger_get_or_create("Cash" if v.payment_mode == "cash" else "Bank",
-                                       "Cash-in-hand" if v.payment_mode == "cash" else "Bank Accounts")
+        mode_name = "Cash" if v.payment_mode == "cash" else ("Bank" if v.payment_mode == "bank" else "Online Payment")
+        mode_group = "Cash-in-hand" if v.payment_mode == "cash" else "Bank Accounts"
+        cash_l = _ledger_get_or_create(mode_name, mode_group)
         party_l = _ledger_get_or_create(v.party.name if v.party else "Other Receipts",
                                         "Sundry Debtors" if v.party else "Indirect Incomes")
         db.session.add(LedgerEntry(voucher_id=v.id, ledger_id=cash_l.id, entry_date=v.voucher_date,
@@ -89,8 +90,9 @@ def _post_double_entry(v: Voucher):
         db.session.add(LedgerEntry(voucher_id=v.id, ledger_id=party_l.id, entry_date=v.voucher_date,
                                    fy_year=v.fy_year, credit=v.grand_total, narration=v.voucher_no))
     elif v.voucher_type == "payment":
-        cash_l = _ledger_get_or_create("Cash" if v.payment_mode == "cash" else "Bank",
-                                       "Cash-in-hand" if v.payment_mode == "cash" else "Bank Accounts")
+        mode_name = "Cash" if v.payment_mode == "cash" else ("Bank" if v.payment_mode == "bank" else "Online Payment")
+        mode_group = "Cash-in-hand" if v.payment_mode == "cash" else "Bank Accounts"
+        cash_l = _ledger_get_or_create(mode_name, mode_group)
         party_l = _ledger_get_or_create(v.party.name if v.party else "Other Expenses",
                                         "Sundry Creditors" if v.party else "Indirect Expenses")
         db.session.add(LedgerEntry(voucher_id=v.id, ledger_id=party_l.id, entry_date=v.voucher_date,
@@ -187,7 +189,20 @@ def new_invoice(vtype):
         return jsonify({"ok": True, "id": v.id, "voucher_no": v.voucher_no})
 
     parties = Party.query.order_by(Party.name).all()
-    products = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+    products_raw = Product.query.filter_by(is_active=True).order_by(Product.name).all()
+    products = []
+    for p in products_raw:
+        products.append({
+            "id": p.id,
+            "name": p.name,
+            "sku": p.sku,
+            "barcode": p.barcode,
+            "hsn_code": p.hsn_code,
+            "gst_rate": p.gst_rate,
+            "sale_price": p.sale_price,
+            "purchase_price": p.purchase_price,
+            "unit": p.unit
+        })
     return render_template("voucher_invoice.html", vtype=vtype, parties=parties,
                            products=products, today=date.today().isoformat())
 
@@ -210,6 +225,7 @@ def new_cash_voucher(vtype):
             party_id=int(party_id) if party_id else None,
             narration=request.form.get("narration", ""),
             payment_mode=request.form.get("payment_mode", "cash"),
+            transaction_id=request.form.get("transaction_id", ""),
             grand_total=amt,
             taxable_value=amt,
             created_by=current_user.id,

@@ -24,7 +24,8 @@ class Voucher(db.Model):
     grand_total = db.Column(db.Float, default=0.0)
 
     is_interstate = db.Column(db.Boolean, default=False)
-    payment_mode = db.Column(db.String(30))  # cash, bank, credit
+    payment_mode = db.Column(db.String(30))  # cash, bank, credit, online
+    transaction_id = db.Column(db.String(100))  # For online payments
     status = db.Column(db.String(20), default="posted")  # posted, draft, cancelled
 
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))

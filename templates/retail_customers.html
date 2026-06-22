@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Retail Customers - Tally-ERP{% endblock %}
+
+{% block content %}
+<div class="header-row">
+    <h1>Retail Customers</h1>
+    <div class="actions">
+        <a href="{{ url_for('inventory.new_party', type='customer') }}" class="btn primary">+ New Retail Customer</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="filter-row">
+        <form method="GET" class="form-inline">
+            <input type="text" name="q" placeholder="Search by name, mobile, or email..." value="{{ q }}" style="flex: 1; margin-right: 10px;">
+            <button type="submit" class="btn primary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Customer Name</th>
+                <th>Mobile No</th>
+                <th>Address</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in customers %}
+            <tr>
+                <td><strong>{{ c.name }}</strong></td>
+                <td>{{ c.phone or '—' }}</td>
+                <td>{{ c.address or '—' }}</td>
+                <td>{{ c.email or '—' }}</td>
+                <td>
+                    <a href="{{ url_for('inventory.edit_party', pid=c.id) }}" class="btn small">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if not customers %}
+    <p style="text-align: center; color: #999; padding: 20px;">No retail customers found</p>
+    {% endif %}
+</div>
+{% endblock %}

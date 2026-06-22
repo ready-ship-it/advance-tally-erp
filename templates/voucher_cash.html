@@ -10,11 +10,26 @@
     </select>
   </label>
   <label>Mode
-    <select name="payment_mode"><option value="cash">Cash</option><option value="bank">Bank</option></select>
+    <select name="payment_mode" id="paymentMode">
+      <option value="cash">Cash</option>
+      <option value="bank">Bank</option>
+      <option value="online">Online</option>
+    </select>
+  </label>
+  <label id="transIdRow" style="display:none;">Transaction ID
+    <input name="transaction_id" placeholder="UPI / Ref No.">
   </label>
   <label>Amount ₹<input name="amount" type="number" step="0.01" required></label>
   <label class="full">Narration<textarea name="narration"></textarea></label>
   <div class="full"><button class="btn primary">Save</button>
     <a href="{{ url_for('vouchers.list_vouchers', vtype=vtype) }}" class="btn">Cancel</a></div>
 </form>
+{% block scripts %}
+<script>
+document.getElementById('paymentMode').addEventListener('change', function() {
+  const transRow = document.getElementById('transIdRow');
+  transRow.style.display = (this.value === 'online') ? 'block' : 'none';
+});
+</script>
+{% endblock %}
 {% endblock %}

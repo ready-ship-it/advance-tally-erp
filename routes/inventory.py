@@ -180,3 +180,19 @@ def edit_party(pid):
         flash("Party updated", "success")
         return redirect(url_for("inventory.parties"))
     return render_template("party_form.html", party=p)
+
+
+@bp.route("/retail-customers")
+@login_required_full
+def retail_customers():
+    q = request.args.get("q", "").strip()
+    query = Party.query.filter_by(party_type="customer")
+    if q:
+        query = query.filter(or_(
+            Party.name.ilike(f"%{q}%"),
+            Party.phone.ilike(f"%{q}%"),
+            Party.email.ilike(f"%{q}%")
+        ))
+    items = query.order_by(Party.name).all()
+    return render_template("retail_customers.html", customers=items, q=q)
+
