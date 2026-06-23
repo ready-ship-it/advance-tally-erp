@@ -2,18 +2,27 @@
 {% block content %}
 <div class="row-between">
   <h1>Parties (Customers & Suppliers)</h1>
-  {% if current_user.is_admin() %}<a class="btn" href="{{ url_for('inventory.new_party') }}">+ New Party</a>{% endif %}
+  <div style="display: flex; gap: 10px;">
+    <form method="GET" class="form-inline" style="flex: 1;">
+      <input type="text" name="q" placeholder="Search by name or mobile..." value="{{ q }}" style="flex: 1;">
+      <button type="submit" class="btn primary">Search</button>
+    </form>
+    {% if current_user.is_admin() %}<a class="btn" href="{{ url_for('inventory.new_party') }}">+ New Party</a>{% endif %}
+  </div>
 </div>
 <table class="data"><thead><tr>
-  <th>Name</th><th>Type</th><th>GSTIN</th><th>State</th><th>Phone</th><th>Opening ₹</th><th></th>
+  <th>Name</th><th>Type</th><th>GSTIN</th><th>Address</th><th>Phone</th><th>Email</th><th>Opening ₹</th><th>Actions</th>
 </tr></thead><tbody>
 {% for p in parties %}
 <tr>
   <td>{{p.name}}</td><td>{{p.party_type}}</td><td>{{p.gstin}}</td>
-  <td>{{p.state}} ({{p.state_code}})</td><td>{{p.phone}}</td>
+  <td>{{p.address}}</td><td>{{p.phone}}</td><td>{{p.email}}</td>
   <td>{{ "{:,.2f}".format(p.opening_balance) }}</td>
-  <td>{% if current_user.is_admin() %}<a href="{{ url_for('inventory.edit_party', pid=p.id) }}">Edit</a>{% endif %}</td>
+  <td>{% if current_user.is_admin() %}<a href="{{ url_for('inventory.edit_party', pid=p.id) }}" class="btn small">Edit</a> <a href="{{ url_for('inventory.delete_party', pid=p.id) }}" class="btn small danger" onclick="return confirm('Delete this party?')">Delete</a>{% endif %}</td>
 </tr>
 {% endfor %}
 </tbody></table>
+{% if not parties %}
+<p style="text-align: center; color: #999; padding: 20px;">No parties found.</p>
+{% endif %}
 {% endblock %}

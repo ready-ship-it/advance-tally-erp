@@ -5,13 +5,13 @@
 <div class="header-row">
     <h1>Retail Customers</h1>
     <div class="actions">
-        <a href="{{ url_for('inventory.new_party', type='customer') }}" class="btn primary">+ New Retail Customer</a>
+        <a href="{{ url_for('inventory.new_retail_customer') }}" class="btn primary">+ New Retail Customer</a>
     </div>
 </div>
 
 <div class="card">
     <div class="filter-row">
-        <form method="GET" class="form-inline">
+        <form method="GET" class="form-inline" style="width: 100%;">
             <input type="text" name="q" placeholder="Search by name, mobile, or email..." value="{{ q }}" style="flex: 1; margin-right: 10px;">
             <button type="submit" class="btn primary">Search</button>
         </form>
@@ -37,7 +37,8 @@
                 <td>{{ c.address or '—' }}</td>
                 <td>{{ c.email or '—' }}</td>
                 <td>
-                    <a href="{{ url_for('inventory.edit_party', pid=c.id) }}" class="btn small">Edit</a>
+                    <a href="{{ url_for('inventory.edit_retail_customer', pid=c.id) }}" class="btn small">Edit</a>
+                    <a href="{{ url_for('inventory.delete_retail_customer', pid=c.id) }}" class="btn small danger" onclick="return confirm('Delete this customer?')">Delete</a>
                 </td>
             </tr>
             {% endfor %}

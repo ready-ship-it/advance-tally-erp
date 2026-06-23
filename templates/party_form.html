@@ -11,13 +11,33 @@
     </select>
   </label>
   <label>GSTIN<input name="gstin" value="{{ party.gstin if party else '' }}" maxlength="15"></label>
-  <label>State<input name="state" value="{{ party.state if party else 'Maharashtra' }}"></label>
-  <label>State Code<input name="state_code" value="{{ party.state_code if party else '27' }}" maxlength="3"></label>
+  <label>State
+    <select name="state" id="stateSelect" onchange="updateStateCode()">
+      <option value="">-- Select State --</option>
+      {% for state in states %}
+      <option value="{{ state.name }}" data-code="{{ state.code }}" {% if party and party.state == state.name %}selected{% endif %}>{{ state.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>State Code<input name="state_code" id="stateCode" value="{{ party.state_code if party else '' }}" maxlength="3" readonly></label>
   <label class="full">Address<textarea name="address">{{ party.address if party else '' }}</textarea></label>
   <label>Phone<input name="phone" value="{{ party.phone if party else '' }}"></label>
-  <label>Email<input name="email" type="email" value="{{ party.email if party else '' }}"></label>
+  <label>Email (Optional)<input name="email" type="email" value="{{ party.email if party else '' }}"></label>
   <label>Opening Balance ₹<input name="opening_balance" type="number" step="0.01" value="{{ party.opening_balance if party else 0 }}"></label>
   <div class="full"><button class="btn primary">Save</button>
-    <a href="{{ url_for('inventory.parties') }}" class="btn">Cancel</a></div>
+    <a href="{{ url_for('inventory.parties') }}" class="btn">Cancel</a>
+    {% if party %}<a href="{{ url_for('inventory.delete_party', pid=party.id) }}" class="btn danger" onclick="return confirm('Delete this party?')">Delete</a>{% endif %}</div>
 </form>
+<script>
+function updateStateCode() {
+  const select = document.getElementById('stateSelect');
+  const codeInput = document.getElementById('stateCode');
+  const option = select.options[select.selectedIndex];
+  codeInput.value = option.getAttribute('data-code') || '';
+}
+// Initialize on page load
+if (document.getElementById('stateSelect').value) {
+  updateStateCode();
+}
+</script>
 {% endblock %}

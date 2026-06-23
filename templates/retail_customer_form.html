@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>{{ "Edit" if customer else "New" }} Retail Customer</h2>
+    <form method="post" class="form">
+        <div class="field">
+            <label>Customer Name *</label>
+            <input type="text" name="name" value="{{ customer.name if customer else '' }}" required>
+        </div>
+        
+        <div class="field">
+            <label>GSTIN</label>
+            <input type="text" name="gstin" value="{{ customer.gstin if customer else '' }}" maxlength="15">
+        </div>
+        
+        <div class="field">
+            <label>State</label>
+            <select name="state" id="stateSelect" onchange="updateStateCode()">
+                <option value="">-- Select State --</option>
+                {% for state in states %}
+                <option value="{{ state.name }}" data-code="{{ state.code }}" {% if customer and customer.state == state.name %}selected{% endif %}>{{ state.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="field">
+            <label>State Code</label>
+            <input type="text" name="state_code" id="stateCode" value="{{ customer.state_code if customer else '' }}" maxlength="3" readonly>
+        </div>
+        
+        <div class="field full">
+            <label>Address</label>
+            <textarea name="address">{{ customer.address if customer else '' }}</textarea>
+        </div>
+        
+        <div class="field">
+            <label>Mobile Number</label>
+            <input type="tel" name="phone" value="{{ customer.phone if customer else '' }}">
+        </div>
+        
+        <div class="field">
+            <label>Email (Optional)</label>
+            <input type="email" name="email" value="{{ customer.email if customer else '' }}">
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn primary">Save Customer</button>
+            <a href="{{ url_for('inventory.retail_customers') }}" class="btn secondary">Cancel</a>
+            {% if customer %}<a href="{{ url_for('inventory.delete_retail_customer', pid=customer.id) }}" class="btn danger" onclick="return confirm('Delete this customer?')">Delete</a>{% endif %}
+        </div>
+    </form>
+</div>
+
+<script>
+function updateStateCode() {
+  const select = document.getElementById('stateSelect');
+  const codeInput = document.getElementById('stateCode');
+  const option = select.options[select.selectedIndex];
+  codeInput.value = option.getAttribute('data-code') || '';
+}
+// Initialize on page load
+if (document.getElementById('stateSelect').value) {
+  updateStateCode();
+}
+</script>
+{% endblock %}
