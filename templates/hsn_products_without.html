@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Products Without HSN Codes</h1>
+    <a href="{{ url_for('hsn.hsn_master') }}" class="btn">Back to HSN Master</a>
+</div>
+
+<div class="card">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Current GST</th>
+                <th>Suggested HSN</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.category.name if p.category else '-' }}</td>
+                <td>{{ p.gst_rate }}%</td>
+                <td id="suggest-{{ p.id }}"><span class="muted">Loading...</span></td>
+                <td>
+                    <button class="btn small primary" onclick="assignHSN({{ p.id }})">Assign</button>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="muted">All products have HSN codes!</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for p in products %}
+    fetch("{{ url_for('hsn.api_suggest') }}?q={{ p.name|urlencode }}")
+        .then(r => r.json())
+        .then(data => {
+            let el = document.getElementById("suggest-{{ p.id }}");
+            if(data.length > 0) {
+                el.innerHTML = `<b>${data[0].hsn_code}</b> (${data[0].gst_rate}%)`;
+                el.dataset.code = data[0].hsn_code;
+            } else {
+                el.innerHTML = "No suggestion";
+            }
+        });
+    {% endfor %}
+});
+
+function assignHSN(pid) {
+    let code = document.getElementById("suggest-"+pid).dataset.code;
+    if(!code) return alert("No HSN suggested");
+    
+    fetch("{{ url_for('hsn.api_bulk_assign') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({product_ids: [pid], hsn_code: code})
+    }).then(r => r.json()).then(data => {
+        if(data.success) location.reload();
+        else alert(data.message);
+    });
+}
+</script>
+{% endblock %}

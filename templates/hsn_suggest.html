@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Suggested HSN Codes</h1>
+    <a href="{{ url_for('hsn.hsn_master') }}" class="btn">Back to HSN Master</a>
+</div>
+
+<div class="card">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Suggested HSN</th>
+                <th>Description</th>
+                <th>GST Rate</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pid, sugg in suggestions.items() %}
+            {% set p = products|selectattr("id", "equalto", pid)|first %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td><b>{{ sugg.hsn_code }}</b></td>
+                <td>{{ sugg.description }}</td>
+                <td>{{ sugg.gst_rate }}%</td>
+                <td>
+                    <button class="btn small primary" onclick="assignHSN({{ pid }}, '{{ sugg.hsn_code }}')">Apply</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function assignHSN(pid, code) {
+    fetch("{{ url_for('hsn.api_bulk_assign') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({product_ids: [pid], hsn_code: code})
+    }).then(r => r.json()).then(data => {
+        if(data.success) location.reload();
+        else alert(data.message);
+    });
+}
+</script>
+{% endblock %}

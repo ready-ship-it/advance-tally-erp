@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>{{ account.account_name }}</h1>
+    <div>
+        <a href="{{ url_for('bank.import_statement', aid=account.id) }}" class="btn">Import Statement</a>
+        <a href="{{ url_for('bank.reconcile', aid=account.id) }}" class="btn primary">Start Reconciliation</a>
+        <a href="{{ url_for('bank.list_accounts') }}" class="btn">Back</a>
+    </div>
+</div>
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="lbl">A/C Number</div>
+        <div class="val">{{ account.account_number }}</div>
+    </div>
+    <div class="kpi">
+        <div class="lbl">IFSC</div>
+        <div class="val">{{ account.ifsc_code }}</div>
+    </div>
+    <div class="kpi">
+        <div class="lbl">Unreconciled</div>
+        <div class="val">{{ unreconciled_count }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recent Statements</h2>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Reference</th>
+                <th class="r">Debit</th>
+                <th class="r">Credit</th>
+                <th class="r">Balance</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for st in statements %}
+            <tr>
+                <td>{{ st.transaction_date }}</td>
+                <td>{{ st.description }}</td>
+                <td>{{ st.reference }}</td>
+                <td class="r text-danger">{{ "{:,.2f}".format(st.debit) if st.debit else "-" }}</td>
+                <td class="r text-success">{{ "{:,.2f}".format(st.credit) if st.credit else "-" }}</td>
+                <td class="r"><b>₹{{ "{:,.2f}".format(st.balance) }}</b></td>
+                <td>
+                    <span class="badge {{ 'success' if st.is_reconciled else 'warning' }}">
+                        {{ 'Reconciled' if st.is_reconciled else 'Pending' }}
+                    </span>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="muted">No statements imported yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

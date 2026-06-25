@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Add New HSN Code</h1>
+    <a href="{{ url_for('hsn.hsn_master') }}" class="btn">Back to Master</a>
+</div>
+
+<div class="card">
+    <form action="{{ url_for('hsn.add_hsn') }}" method="POST" class="form-grid">
+        <label>HSN Code (2, 4, 6, or 8 digits)
+            <input type="text" name="hsn_code" placeholder="e.g. 8471" required>
+        </label>
+        <label>Category
+            <input type="text" name="category" list="catList" placeholder="e.g. Computers" required>
+            <datalist id="catList">
+                {% for cat in categories %}<option value="{{ cat }}">{% endfor %}
+            </datalist>
+        </label>
+        <label class="full">Description
+            <textarea name="description" placeholder="Product description as per GST schedule" required></textarea>
+        </label>
+        <label>Chapter
+            <input type="text" name="chapter" placeholder="e.g. 84" required>
+        </label>
+        <label>GST Rate (%)
+            <input type="number" step="0.01" name="gst_rate" value="18.00" required>
+        </label>
+        <label>Cess Rate (%)
+            <input type="number" step="0.01" name="cess_rate" value="0.00">
+        </label>
+        <div class="full mt">
+            <button type="submit" class="btn primary">Save HSN Code</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

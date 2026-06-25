@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Start Reconciliation: {{ account.account_name }}</h1>
+    <a href="{{ url_for('bank.view_account', aid=account.id) }}" class="btn">Back</a>
+</div>
+
+<div class="card" style="max-width: 500px;">
+    <form action="{{ url_for('bank.reconcile', aid=account.id) }}" method="POST" class="form-grid" style="grid-template-columns: 1fr;">
+        <label>Bank Statement Date
+            <input type="date" name="statement_date" value="{{ today }}" required>
+        </label>
+        <label>Closing Balance as per Bank (₹)
+            <input type="number" step="0.01" name="closing_balance" placeholder="0.00" required>
+        </label>
+        <div class="mt">
+            <button type="submit" class="btn primary">Start Session</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

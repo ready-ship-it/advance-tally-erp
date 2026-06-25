@@ -2,43 +2,47 @@
 {% block title %}Retail Customers - Tally-ERP{% endblock %}
 
 {% block content %}
-<div class="header-row">
+<div class="header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h1>Retail Customers</h1>
     <div class="actions">
         <a href="{{ url_for('inventory.new_retail_customer') }}" class="btn primary">+ New Retail Customer</a>
     </div>
 </div>
 
-<div class="card">
+<div class="card" style="margin-bottom: 20px;">
     <div class="filter-row">
-        <form method="GET" class="form-inline" style="width: 100%;">
-            <input type="text" name="q" placeholder="Search by name, mobile, or email..." value="{{ q }}" style="flex: 1; margin-right: 10px;">
+        <form method="GET" class="form-inline" style="display: flex; width: 100%;">
+            <input type="text" name="q" placeholder="Search by name, mobile, or email..." value="{{ q }}" style="flex: 1; margin-right: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             <button type="submit" class="btn primary">Search</button>
         </form>
     </div>
 </div>
 
 <div class="card">
-    <table class="table">
+    <table class="table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr>
-                <th>Customer Name</th>
-                <th>Mobile No</th>
-                <th>Address</th>
-                <th>Email</th>
-                <th>Actions</th>
+            <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                <th style="padding: 12px;">Customer Name</th>
+                <th style="padding: 12px;">Mobile No</th>
+                <th style="padding: 12px;">Address</th>
+                <th style="padding: 12px;">State</th>
+                <th style="padding: 12px;">Email</th>
+                <th style="padding: 12px;">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for c in customers %}
-            <tr>
-                <td><strong>{{ c.name }}</strong></td>
-                <td>{{ c.phone or '—' }}</td>
-                <td>{{ c.address or '—' }}</td>
-                <td>{{ c.email or '—' }}</td>
-                <td>
-                    <a href="{{ url_for('inventory.edit_retail_customer', pid=c.id) }}" class="btn small">Edit</a>
-                    <a href="{{ url_for('inventory.delete_retail_customer', pid=c.id) }}" class="btn small danger" onclick="return confirm('Delete this customer?')">Delete</a>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px;"><strong>{{ c.name }}</strong></td>
+                <td style="padding: 12px;">{{ c.phone or '—' }}</td>
+                <td style="padding: 12px;">{{ c.address or '—' }}</td>
+                <td style="padding: 12px;">{{ c.state }} ({{ c.state_code }})</td>
+                <td style="padding: 12px;">{{ c.email or '—' }}</td>
+                <td style="padding: 12px;">
+                    <a href="{{ url_for('inventory.edit_party', pid=c.id) }}" class="btn small">Edit</a>
+                    <form action="{{ url_for('inventory.delete_party', pid=c.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this customer?')">
+                        <button type="submit" class="btn small danger" style="border: none; background: none; color: #dc3545; cursor: pointer;">Delete</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}

@@ -13,38 +13,61 @@
   <div class="fy-chip">FY {{ session['fy_year'] }}-{{ (session['fy_year']+1) % 100 }}</div>
   <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
   <div class="group">Inventory</div>
+  {% if current_user.role in ['master_admin', 'admin'] %}
   <a href="{{ url_for('inventory.products') }}">Products</a>
   <a href="{{ url_for('inventory.categories') }}">Categories</a>
   <a href="{{ url_for('inventory.parties') }}">Parties</a>
+  {% endif %}
   <a href="{{ url_for('inventory.retail_customers') }}">Retail Customers</a>
+  {% if current_user.role in ['master_admin', 'admin'] %}
   <a href="{{ url_for('warehouse.list_warehouses') }}">Warehouse</a>
   <a href="{{ url_for('hsn.hsn_master') }}">HSN Master</a>
   <a href="{{ url_for('product_import.import_dashboard') }}">Import Products</a>
+  {% endif %}
+
   <div class="group">Vouchers</div>
   <a href="{{ url_for('vouchers.list_vouchers', vtype='sales') }}">Sales</a>
+  {% if current_user.role in ['master_admin', 'admin'] %}
   <a href="{{ url_for('vouchers.list_vouchers', vtype='purchase') }}">Purchase</a>
   <a href="{{ url_for('vouchers.list_vouchers', vtype='receipt') }}">Receipts</a>
   <a href="{{ url_for('vouchers.list_vouchers', vtype='payment') }}">Payments</a>
+  {% endif %}
+
+  {% if current_user.role in ['master_admin', 'admin'] %}
   <div class="group">Banking</div>
   <a href="{{ url_for('bank.list_accounts') }}">Bank Reconciliation</a>
+  {% endif %}
+
   <div class="group">Reports</div>
   <a href="{{ url_for('reports.day_book') }}">Day Book</a>
+  {% if current_user.role in ['master_admin', 'admin'] %}
   <a href="{{ url_for('reports.ledger_list') }}">Ledgers</a>
-  <a href="{{ url_for('reports.gst_monthly') }}">GST Monthly</a>
-  <a href="{{ url_for('reports.gstr1_export') }}">GSTR-1 (Sales)</a>
-  <a href="{{ url_for('reports.gstr2_export') }}">GSTR-2 (Purchase)</a>
-  <a href="{{ url_for('reports.gstr3b_export') }}">GSTR-3B (Monthly)</a>
-  <a href="{{ url_for('reports.gstr9_export') }}">GSTR-9 (Annual)</a>
+  
+  <div class="dropdown">
+    <a href="#" class="dropdown-toggle">GST Returns ▼</a>
+    <div class="dropdown-menu">
+      <a href="{{ url_for('reports.gst_monthly') }}">GST Monthly</a>
+      <a href="{{ url_for('reports.gstr1_export') }}">GSTR-1 (Sales)</a>
+      <a href="{{ url_for('reports.gstr2_export') }}">GSTR-2 (Purchase)</a>
+      <a href="{{ url_for('reports.gstr3b_export') }}">GSTR-3B (Monthly)</a>
+      <a href="{{ url_for('reports.gstr9_export') }}">GSTR-9 (Annual)</a>
+    </div>
+  </div>
+  
   <a href="{{ url_for('reports.pnl') }}">Profit &amp; Loss</a>
+  {% endif %}
+
   {% if current_user.is_admin() %}
   <div class="group">Admin</div>
   <a href="{{ url_for('backup.index') }}">Backup &amp; FTP</a>
   <a href="{{ url_for('admin.settings') }}">Company Settings</a>
+  
+  {% if current_user.role == 'master_admin' %}
   <a href="{{ url_for('email.email_settings') }}">Email Settings</a>
   <a href="{{ url_for('tally.migrate') }}">Tally Migration</a>
-  {% if current_user.is_master() %}
-  <a href="{{ url_for('admin.users') }}">Users &amp; Roles</a>
   {% endif %}
+
+  <a href="{{ url_for('admin.users') }}">Users &amp; Roles</a>
   {% endif %}
   <div class="bottom">
     <div class="who">{{ current_user.full_name or current_user.username }} <span class="role">{{ current_user.role }}</span></div>

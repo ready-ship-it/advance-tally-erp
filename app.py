@@ -58,6 +58,39 @@ def create_app(config_class=Config) -> Flask:
             return redirect(url_for("auth.login"))
         return redirect(url_for("dashboard.index"))
 
+    @app.route("/migrate-db")
+    def migrate_db():
+        """One-time route to fix database schema."""
+        try:
+            from sqlalchemy import text
+            # 1. Add transaction_id to vouchers if missing
+            try:
+                db.session.execute(text("ALTER TABLE vouchers ADD COLUMN transaction_id VARCHAR(100)"))
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                app.logger.info("Column transaction_id already exists or error: %s", e)
+
+            # 2. Create any missing tables
+            db.create_all()
+
+            # 2b. Add missing bank account columns if needed
+            try:
+                db.session.execute(text("ALTER TABLE bank_accounts ADD COLUMN opening_balance FLOAT DEFAULT 0.0"))
+                db.session.commit()
+            except:
+                db.session.rollback()
+
+            # 3. Seed HSN data if empty
+            from models.hsn import HSNMaster
+            if not HSNMaster.query.first():
+                from services.hsn_service import seed_hsn_master
+                seed_hsn_master()
+            
+            return "<h1>Database Migration Successful!</h1><p>The transaction_id column has been added and tables are up to date.</p><a href='/'>Go to Dashboard</a>"
+        except Exception as e:
+            return f"<h1>Migration Failed</h1><p>Error: {str(e)}</p><a href='/'>Go to Dashboard</a>"
+
     @app.errorhandler(403)
     def forbidden(e):
         return ("<h1>403 — Forbidden</h1><p>You do not have permission for this action.</p>"
@@ -66,11 +99,34 @@ def create_app(config_class=Config) -> Flask:
     # ---- Auto-create tables + seed (idempotent) ----
     with app.app_context():
         try:
+            from sqlalchemy import text
+            # 1. Ensure new columns exist in existing tables
+            try:
+                db.session.execute(text("ALTER TABLE vouchers ADD COLUMN transaction_id VARCHAR(100)"))
+                db.session.commit()
+            except:
+                db.session.rollback()
+
+            try:
+                db.session.execute(text("ALTER TABLE bank_accounts ADD COLUMN opening_balance FLOAT DEFAULT 0.0"))
+                db.session.commit()
+            except:
+                db.session.rollback()
+
+            # 2. Create all tables
             db.create_all()
+
+            # 3. Seed HSN data if empty
+            from models.hsn import HSNMaster
+            if not HSNMaster.query.first():
+                from services.hsn_service import seed_hsn_master
+                seed_hsn_master()
+
+            # 4. Seed other data
             from data.seed_products import seed_all
             seed_all()
         except Exception as e:
-            app.logger.warning("DB init/seed skipped: %s", e)
+            app.logger.warning("DB init/seed skipped or partially failed: %s", e)
 
     # ---- Backup scheduler (skip in test/CLI) ----
     if os.getenv("ENABLE_SCHEDULER", "true").lower() == "true":

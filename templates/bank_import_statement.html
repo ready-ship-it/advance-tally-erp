@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Import Statement: {{ account.account_name }}</h1>
+    <a href="{{ url_for('bank.view_account', aid=account.id) }}" class="btn">Back</a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form action="{{ url_for('bank.import_statement', aid=account.id) }}" method="POST" enctype="multipart/form-data">
+        <div class="form-grid" style="grid-template-columns: 1fr;">
+            <label>Select CSV File
+                <input type="file" name="file" accept=".csv" required>
+            </label>
+            <div class="muted small mt">
+                <b>Required CSV Format:</b><br/>
+                date (DD-MM-YYYY), description, reference, debit, credit, balance
+            </div>
+            <div class="mt">
+                <button type="submit" class="btn primary">Upload & Import</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

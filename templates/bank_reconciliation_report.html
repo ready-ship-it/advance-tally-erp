@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Reconciliation Report</h1>
+    <div>
+        <button class="btn" onclick="window.print()">Print Report</button>
+        <a href="{{ url_for('bank.view_account', aid=reconciliation.account_id) }}" class="btn">Back to Account</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div style="text-align:center; margin-bottom:30px;">
+        <h2>Bank Reconciliation Statement</h2>
+        <p>As on {{ reconciliation.bank_statement_date }}</p>
+    </div>
+
+    <table class="data">
+        <tbody>
+            <tr>
+                <td><b>Balance as per Bank Statement</b></td>
+                <td class="r"><b>₹{{ "{:,.2f}".format(reconciliation.bank_closing_balance) }}</b></td>
+            </tr>
+            <tr>
+                <td>Add: Deposits in Transit</td>
+                <td class="r">₹{{ "{:,.2f}".format(report.deposits_in_transit) }}</td>
+            </tr>
+            <tr>
+                <td>Less: Outstanding Cheques</td>
+                <td class="r">(₹{{ "{:,.2f}".format(report.outstanding_cheques) }})</td>
+            </tr>
+            <tr class="totals-row">
+                <td><b>Adjusted Bank Balance</b></td>
+                <td class="r"><b>₹{{ "{:,.2f}".format(report.adjusted_bank_balance) }}</b></td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td><b>Balance as per Books</b></td>
+                <td class="r"><b>₹{{ "{:,.2f}".format(report.book_balance) }}</b></td>
+            </tr>
+            <tr>
+                <td>Less: Unrecorded Bank Charges</td>
+                <td class="r">(₹{{ "{:,.2f}".format(report.bank_charges) }})</td>
+            </tr>
+            <tr class="totals-row">
+                <td><b>Adjusted Book Balance</b></td>
+                <td class="r"><b>₹{{ "{:,.2f}".format(report.adjusted_book_balance) }}</b></td>
+            </tr>
+            <tr><td colspan="2">&nbsp;</td></tr>
+            <tr>
+                <td><b>Difference (Unexplained)</b></td>
+                <td class="r"><b class="{{ 'text-danger' if report.difference != 0 else 'text-success' }}">₹{{ "{:,.2f}".format(report.difference) }}</b></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="margin-top:50px; display:flex; justify-content:space-between;">
+        <div style="border-top:1px solid #000; width:200px; text-align:center; padding-top:5px;">Prepared By</div>
+        <div style="border-top:1px solid #000; width:200px; text-align:center; padding-top:5px;">Authorized Signatory</div>
+    </div>
+</div>
+{% endblock %}

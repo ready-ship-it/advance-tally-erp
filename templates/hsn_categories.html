@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>HSN Categories</h1>
+    <a href="{{ url_for('hsn.hsn_master') }}" class="btn">Back to HSN Master</a>
+</div>
+
+<div class="card">
+    <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+        {% for cat in categories %}
+        <a href="{{ url_for('hsn.hsn_master', category=cat.name) }}" class="kpi" style="text-decoration:none; color:inherit;">
+            <div class="lbl">{{ cat.name }}</div>
+            <div class="val">{{ cat.count }} Codes</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

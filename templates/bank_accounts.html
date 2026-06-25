@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Bank Accounts</h1>
+    <a href="{{ url_for('bank.new_account') }}" class="btn primary">+ New Bank Account</a>
+</div>
+
+<div class="card">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Account Name</th>
+                <th>Bank / Branch</th>
+                <th>Account Number</th>
+                <th>IFSC</th>
+                <th class="r">Opening Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for acc in accounts %}
+            <tr>
+                <td><b>{{ acc.account_name }}</b></td>
+                <td>{{ acc.bank_name }} ({{ acc.branch_name }})</td>
+                <td>{{ acc.account_number }}</td>
+                <td>{{ acc.ifsc_code }}</td>
+                <td class="r">₹{{ "{:,.2f}".format(acc.opening_balance) }}</td>
+                <td>
+                    <span class="badge {{ 'success' if acc.is_active else 'danger' }}">
+                        {{ 'Active' if acc.is_active else 'Inactive' }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('bank.view_account', aid=acc.id) }}" class="btn small">View</a>
+                    <a href="{{ url_for('bank.reconcile', aid=acc.id) }}" class="btn small primary">Reconcile</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="muted">No bank accounts found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

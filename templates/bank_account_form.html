@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>{{ 'Edit' if account else 'New' }} Bank Account</h1>
+    <a href="{{ url_for('bank.list_accounts') }}" class="btn">Back to List</a>
+</div>
+
+<div class="card">
+    <form action="{{ url_for('bank.edit_account', aid=account.id) if account else url_for('bank.new_account') }}" method="POST" class="form-grid">
+        <label>Account Display Name
+            <input type="text" name="account_name" value="{{ account.account_name if account else '' }}" placeholder="e.g. HDFC Current A/c" required>
+        </label>
+        <label>Bank Name
+            <input type="text" name="bank_name" value="{{ account.bank_name if account else '' }}" placeholder="e.g. HDFC Bank" required>
+        </label>
+        <label>Account Number
+            <input type="text" name="account_number" value="{{ account.account_number if account else '' }}" placeholder="Enter A/c No." required>
+        </label>
+        <label>IFSC Code
+            <input type="text" name="ifsc_code" value="{{ account.ifsc_code if account else '' }}" placeholder="e.g. HDFC0001234">
+        </label>
+        <label>Branch Name
+            <input type="text" name="branch_name" value="{{ account.branch_name if account else '' }}" placeholder="e.g. Mumbai Main">
+        </label>
+        <label>Opening Balance (₹)
+            <input type="number" step="0.01" name="opening_balance" value="{{ account.opening_balance if account else '0.00' }}" {{ 'disabled' if account else '' }}>
+        </label>
+        {% if account %}
+        <label>Status
+            <select name="is_active">
+                <option value="1" {{ 'selected' if account.is_active else '' }}>Active</option>
+                <option value="0" {{ 'selected' if not account.is_active else '' }}>Inactive</option>
+            </select>
+        </label>
+        {% endif %}
+        <div class="full mt">
+            <button type="submit" class="btn primary">Save Account</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -100,10 +100,15 @@ def invoice_to_pdf(voucher, settings, amt_words):
     
     # Invoice Details Table
     party = voucher.party
+    party_name = party.name if party else "Cash / Walk-in"
+    party_state = f"{party.state} ({party.state_code})" if party else ""
+    party_address = party.address.replace("\n", " ") if party and party.address else ""
+    party_gstin = party.gstin if party and party.gstin else ""
+
     invoice_data = [
-        [f"Invoice No: {voucher.voucher_no}", f"Date: {voucher.voucher_date}"],
-        [f"Bill To: {party.name}", f"State: {party.state} ({party.state_code})"],
-        [party.address.replace("\n", " "), f"GSTIN: {party.gstin}"]
+        [f"Voucher No: {voucher.voucher_no}", f"Date: {voucher.voucher_date}"],
+        [f"Party: {party_name}", f"State: {party_state}"],
+        [f"Address: {party_address}", f"GSTIN: {party_gstin}"]
     ]
     t_details = Table(invoice_data, colWidths=[250, 200])
     t_details.setStyle(TableStyle([
@@ -155,15 +160,15 @@ def invoice_to_pdf(voucher, settings, amt_words):
     elems.append(Spacer(1, 24))
     
     # Footer / Signature
+    elems.append(Spacer(1, 48))
     footer_data = [
-        ["Declaration:", f"For {company_name}"],
-        ["We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.", "\n\n\nAuthorized Signatory"]
+        [Paragraph("<b>Declaration:</b><br/>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.", small_style), 
+         Paragraph(f"For <b>{company_name}</b><br/><br/><br/><br/>Authorized Signatory", normal_style)]
     ]
-    t_footer = Table(footer_data, colWidths=[300, 150])
+    t_footer = Table(footer_data, colWidths=[350, 150])
     t_footer.setStyle(TableStyle([
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('ALIGN', (1, 0), (1, 1), 'RIGHT'),
-        ('FONTSIZE', (0, 1), (0, 1), 8),
+        ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
     ]))
     elems.append(t_footer)
     

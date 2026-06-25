@@ -33,8 +33,8 @@
     </div>
   </div>
   <table class="data" id="itemsTbl"><thead><tr>
-    <th style="width:30%">Product</th><th>HSN</th><th>Qty</th><th>Rate</th>
-    <th>Disc%</th><th>GST%</th><th>Taxable</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th><th></th>
+    <th style="width:25%">Product</th><th>HSN</th><th>Qty</th><th>Rate</th>
+    <th>Disc%</th><th>GST%</th><th>Taxable</th><th>Total</th><th>Actions</th>
   </tr></thead><tbody></tbody></table>
   <div class="totals">
     <div>Taxable: <b id="totTaxable">0.00</b></div>
@@ -66,8 +66,8 @@ function row(p = {}){
     <td><input type="number" step="0.01" class="rate" value="${p.rate||0}"></td>
     <td><input type="number" step="0.01" class="disc" value="0"></td>
     <td><input type="number" step="0.01" class="gst" value="${p.gst||18}"></td>
-    <td class="tax">0.00</td><td class="cg">0.00</td><td class="sg">0.00</td>
-    <td class="ig">0.00</td><td class="lt">0.00</td>
+    <td class="tax">0.00</td>
+    <td><input type="number" step="0.01" class="total_amt" value="0"></td>
     <td><a href="#" class="rem">×</a></td>`;
   tbody.appendChild(tr);
   tr.querySelector('.prod').addEventListener('input', function(){
@@ -86,22 +86,35 @@ function row(p = {}){
   recalc();
 }
 
-function recalc(){
+function recalc(e){
   const inter = document.getElementById('interState').checked;
   let tax=0, cg=0, sg=0, ig=0;
   document.querySelectorAll('#itemsTbl tbody tr').forEach(tr => {
     const qty = +tr.querySelector('.qty').value || 0;
-    const rate = +tr.querySelector('.rate').value || 0;
     const disc = +tr.querySelector('.disc').value || 0;
     const gst  = +tr.querySelector('.gst').value || 0;
+    let rate = +tr.querySelector('.rate').value || 0;
+    let total_amt = +tr.querySelector('.total_amt').value || 0;
+
+    // Reverse calculation if total_amt was changed
+    if (e && e.target.classList.contains('total_amt')) {
+        const taxable_unit = total_amt / (1 + gst/100);
+        rate = taxable_unit / (qty * (1 - disc/100));
+        tr.querySelector('.rate').value = rate.toFixed(2);
+    }
+
     const t = +(qty*rate*(1-disc/100)).toFixed(2);
     let c=0, s=0, i=0;
     if(inter){ i = +(t*gst/100).toFixed(2); } else { c = s = +(t*(gst/2)/100).toFixed(2); }
+    
     tr.querySelector('.tax').textContent = t.toFixed(2);
-    tr.querySelector('.cg').textContent = c.toFixed(2);
-    tr.querySelector('.sg').textContent = s.toFixed(2);
-    tr.querySelector('.ig').textContent = i.toFixed(2);
-    tr.querySelector('.lt').textContent = (t+c+s+i).toFixed(2);
+    const row_total = t + c + s + i;
+    
+    // Only update total_amt input if it wasn't the source of the change
+    if (!e || !e.target.classList.contains('total_amt')) {
+        tr.querySelector('.total_amt').value = row_total.toFixed(2);
+    }
+    
     tax+=t; cg+=c; sg+=s; ig+=i;
   });
   const grand = Math.round(tax+cg+sg+ig);

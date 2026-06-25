@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row-between">
+    <h1>Popular HSN Searches</h1>
+    <a href="{{ url_for('hsn.hsn_master') }}" class="btn">Back to HSN Master</a>
+</div>
+
+<div class="card">
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Search Term</th>
+                <th>Search Count</th>
+                <th>Last Searched</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in searches %}
+            <tr>
+                <td>"{{ s.search_term }}"</td>
+                <td>{{ s.search_count }} times</td>
+                <td>{{ s.last_searched.strftime('%d-%m-%Y %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="muted">No search logs yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

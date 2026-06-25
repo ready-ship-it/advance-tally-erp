@@ -311,3 +311,31 @@ def best_match(keyword: str) -> dict:
     """Legacy function - get best match for keyword."""
     result = suggest_hsn_for_product(keyword)
     return result[0] if result else None
+
+315	def seed_hsn_master():
+316	    """Seed HSN Master with common codes for electronics and computers."""
+317	    common_codes = [
+318	        {"hsn_code": "8471", "description": "Automatic data processing machines and units thereof (Computers/Laptops)", "chapter": "84", "category": "Computers", "gst_rate": 18.0},
+319	        {"hsn_code": "8473", "description": "Parts and accessories of computers", "chapter": "84", "category": "Parts", "gst_rate": 18.0},
+320	        {"hsn_code": "8501", "description": "Electric motors and generators", "chapter": "85", "category": "Machinery", "gst_rate": 18.0},
+321	        {"hsn_code": "8415", "description": "Air-conditioning machines", "chapter": "84", "category": "Appliances", "gst_rate": 28.0},
+322	        {"hsn_code": "8517", "description": "Telephone sets, including smartphones", "chapter": "85", "category": "Telecom", "gst_rate": 18.0},
+323	        {"hsn_code": "8523", "description": "Discs, tapes, solid-state storage (SSD/Pendrives)", "chapter": "85", "category": "Storage", "gst_rate": 18.0},
+324	        {"hsn_code": "8528", "description": "Monitors and projectors", "chapter": "85", "category": "Display", "gst_rate": 18.0},
+325	        {"hsn_code": "8544", "description": "Insulated wire, cables", "chapter": "85", "category": "Cables", "gst_rate": 18.0},
+326	        {"hsn_code": "8443", "description": "Printers, copying machines", "chapter": "84", "category": "Office", "gst_rate": 18.0},
+327	        {"hsn_code": "8504", "description": "Electrical transformers, static converters (UPS/Adapters)", "chapter": "85", "category": "Power", "gst_rate": 18.0},
+328	        {"hsn_code": "8518", "description": "Microphones, loudspeakers, headphones", "chapter": "85", "category": "Audio", "gst_rate": 18.0},
+329	        {"hsn_code": "8525", "description": "Transmission apparatus for radio-broadcasting or television (Cameras)", "chapter": "85", "category": "Video", "gst_rate": 18.0},
+330	        {"hsn_code": "8507", "description": "Electric accumulators (Batteries)", "chapter": "85", "category": "Power", "gst_rate": 28.0},
+331	        {"hsn_code": "8414", "description": "Air or vacuum pumps, air or other gas compressors and fans", "chapter": "84", "category": "Appliances", "gst_rate": 18.0},
+332	    ]
+333	    
+334	    for data in common_codes:
+335	        if not HSNMaster.query.filter_by(hsn_code=data["hsn_code"]).first():
+336	            hsn = HSNMaster(**data)
+337	            db.session.add(hsn)
+338	    
+339	    db.session.commit()
+340	    return True
+341	
