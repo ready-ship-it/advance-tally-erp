@@ -43,16 +43,7 @@
   {% if current_user.role in ['master_admin', 'admin'] %}
   <a href="{{ url_for('reports.ledger_list') }}">Ledgers</a>
   
-  <div class="dropdown">
-    <a href="#" class="dropdown-toggle">GST Returns ▼</a>
-    <div class="dropdown-menu">
-      <a href="{{ url_for('reports.gst_monthly') }}">GST Monthly</a>
-      <a href="{{ url_for('reports.gstr1_export') }}">GSTR-1 (Sales)</a>
-      <a href="{{ url_for('reports.gstr2_export') }}">GSTR-2 (Purchase)</a>
-      <a href="{{ url_for('reports.gstr3b_export') }}">GSTR-3B (Monthly)</a>
-      <a href="{{ url_for('reports.gstr9_export') }}">GSTR-9 (Annual)</a>
-    </div>
-  </div>
+  <a href="{{ url_for('reports.gst_returns') }}">GST Returns</a>
   
   <a href="{{ url_for('reports.pnl') }}">Profit &amp; Loss</a>
   {% endif %}

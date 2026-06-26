@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}GST Returns{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>GST Returns Dashboard</h1>
+    <p class="text-muted">Download GST returns for filing with the GST portal</p>
+    
+    <div class="row mt-4">
+        <!-- GST Monthly -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">GST Monthly Summary</h5>
+                </div>
+                <div class="card-body">
+                    <p>View and download monthly GST summary for the selected financial year.</p>
+                    <a href="{{ url_for('reports.gst_monthly') }}" class="btn btn-primary">View Monthly Summary</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- GSTR-1 -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">GSTR-1 (Outward Supplies)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Sales invoices with B2B and B2C segregation. Download as JSON for direct upload to GST portal.</p>
+                    <form method="GET" action="{{ url_for('reports.gstr1_export') }}" class="form-inline">
+                        <div class="form-group mr-2">
+                            <label for="gstr1_month" class="mr-2">Month:</label>
+                            <input type="number" id="gstr1_month" name="month" min="1" max="12" class="form-control" placeholder="MM" style="width: 60px;">
+                        </div>
+                        <div class="form-group mr-2">
+                            <label for="gstr1_year" class="mr-2">Year:</label>
+                            <input type="number" id="gstr1_year" name="year" class="form-control" placeholder="YYYY" style="width: 80px;">
+                        </div>
+                        <button type="submit" class="btn btn-success">Download JSON</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- GSTR-2 -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">GSTR-2 (Inward Supplies)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Purchase invoices organized by supplier GSTIN. Download as JSON for GST portal.</p>
+                    <form method="GET" action="{{ url_for('reports.gstr2_export') }}" class="form-inline">
+                        <div class="form-group mr-2">
+                            <label for="gstr2_month" class="mr-2">Month:</label>
+                            <input type="number" id="gstr2_month" name="month" min="1" max="12" class="form-control" placeholder="MM" style="width: 60px;">
+                        </div>
+                        <div class="form-group mr-2">
+                            <label for="gstr2_year" class="mr-2">Year:</label>
+                            <input type="number" id="gstr2_year" name="year" class="form-control" placeholder="YYYY" style="width: 80px;">
+                        </div>
+                        <button type="submit" class="btn btn-info">Download JSON</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- GSTR-3B -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">GSTR-3B (Monthly Return)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Monthly GST return with net tax payable calculation (Sales GST - Purchase GST).</p>
+                    <form method="GET" action="{{ url_for('reports.gstr3b_export') }}" class="form-inline">
+                        <div class="form-group mr-2">
+                            <label for="gstr3b_month" class="mr-2">Month:</label>
+                            <input type="number" id="gstr3b_month" name="month" min="1" max="12" class="form-control" placeholder="MM" style="width: 60px;">
+                        </div>
+                        <div class="form-group mr-2">
+                            <label for="gstr3b_year" class="mr-2">Year:</label>
+                            <input type="number" id="gstr3b_year" name="year" class="form-control" placeholder="YYYY" style="width: 80px;">
+                        </div>
+                        <button type="submit" class="btn btn-warning">Download JSON</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- GSTR-9 -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">GSTR-9 (Annual Return)</h5>
+                </div>
+                <div class="card-body">
+                    <p>Annual GST return with 12-month summary and annual totals.</p>
+                    <form method="GET" action="{{ url_for('reports.gstr9_export') }}" class="form-inline">
+                        <div class="form-group mr-2">
+                            <label for="gstr9_year" class="mr-2">Financial Year:</label>
+                            <input type="number" id="gstr9_year" name="fy_year" class="form-control" placeholder="YYYY" style="width: 80px;">
+                        </div>
+                        <button type="submit" class="btn btn-danger">Download JSON</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+        <strong>Note:</strong> All JSON files are formatted for direct upload to the GST portal. Ensure your company GSTIN is configured in Company Settings before downloading.
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+.card-header {
+    font-weight: 600;
+}
+.form-inline {
+    flex-wrap: wrap;
+}
+.form-group {
+    display: flex;
+    align-items: center;
+}
+</style>
+{% endblock %}

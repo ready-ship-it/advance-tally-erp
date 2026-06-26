@@ -219,7 +219,7 @@ def edit_party(pid):
     return render_template("party_form.html", party=p, states=INDIAN_STATES)
 
 
-@bp.route("/parties/<int:pid>/delete")
+@bp.route("/parties/<int:pid>/delete", methods=["GET", "POST"])
 @admin_required
 def delete_party(pid):
     p = Party.query.get_or_404(pid)
@@ -292,7 +292,7 @@ def edit_retail_customer(pid):
     return render_template("retail_customer_form.html", customer=p, states=INDIAN_STATES)
 
 
-@bp.route("/retail-customers/<int:pid>/delete")
+@bp.route("/retail-customers/<int:pid>/delete", methods=["GET", "POST"])
 @admin_required
 def delete_retail_customer(pid):
     """Delete a retail customer."""

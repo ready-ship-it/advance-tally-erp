@@ -40,6 +40,13 @@ def _gst_monthly_rows(fy: int):
     } for r in rows]
 
 
+@bp.route("/gst-returns")
+@login_required_full
+def gst_returns():
+    """GST Returns Dashboard - central hub for all GST downloads."""
+    return render_template("gst_returns.html")
+
+
 @bp.route("/gst-monthly")
 @login_required_full
 def gst_monthly():
