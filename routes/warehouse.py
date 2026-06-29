@@ -36,9 +36,14 @@ def new_warehouse():
             flash("Name and code are required", "error")
             return redirect(url_for("warehouse.new_warehouse"))
         
-        existing = Warehouse.query.filter_by(code=code).first()
-        if existing:
+        existing_code = Warehouse.query.filter_by(code=code).first()
+        if existing_code:
             flash("Warehouse code already exists", "error")
+            return redirect(url_for("warehouse.new_warehouse"))
+        
+        existing_name = Warehouse.query.filter_by(name=name).first()
+        if existing_name:
+            flash("Warehouse name already exists", "error")
             return redirect(url_for("warehouse.new_warehouse"))
         
         warehouse = create_warehouse(name, code, location)
