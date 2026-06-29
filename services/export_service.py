@@ -9,6 +9,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 
 def gst_export_csv(vouchers):
@@ -21,6 +23,123 @@ def gst_export_csv(vouchers):
         output.write(f"{v.voucher_date},{v.voucher_no},{party_name},{gstin},"
                      f"{v.taxable_value},{v.cgst_amount},{v.sgst_amount},{v.igst_amount},{v.grand_total}\n")
     return output.getvalue()
+
+
+def gst_summary_to_xlsx(rows, fy):
+    """Generate GST Monthly Summary as XLSX."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "GST Summary"
+    
+    # Header
+    ws['A1'] = f"GST Monthly Summary - FY {fy}-{fy+1}"
+    ws['A1'].font = Font(bold=True, size=14)
+    
+    # Column headers
+    headers = ["Period", "Taxable Value", "CGST", "SGST", "IGST", "Total GST", "Grand Total"]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=3, column=col)
+        cell.value = header
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        cell.alignment = Alignment(horizontal="center")
+    
+    # Data rows
+    for row_idx, row in enumerate(rows, 4):
+        ws.cell(row=row_idx, column=1).value = row.get("period", "")
+        ws.cell(row=row_idx, column=2).value = row.get("taxable", 0)
+        ws.cell(row=row_idx, column=3).value = row.get("cgst", 0)
+        ws.cell(row=row_idx, column=4).value = row.get("sgst", 0)
+        ws.cell(row=row_idx, column=5).value = row.get("igst", 0)
+        ws.cell(row=row_idx, column=6).value = row.get("total_gst", 0)
+        ws.cell(row=row_idx, column=7).value = row.get("total", 0)
+        
+        # Format as numbers
+        for col in range(2, 8):
+            ws.cell(row=row_idx, column=col).number_format = '#,##0.00'
+    
+    # Totals row
+    if rows:
+        total_row = len(rows) + 4
+        ws.cell(row=total_row, column=1).value = "TOTAL"
+        ws.cell(row=total_row, column=1).font = Font(bold=True)
+        
+        for col in range(2, 8):
+            cell = ws.cell(row=total_row, column=col)
+            cell.value = f"=SUM({chr(64+col)}4:{chr(64+col)}{total_row-1})"
+            cell.font = Font(bold=True)
+            cell.number_format = '#,##0.00'
+    
+    # Adjust column widths
+    ws.column_dimensions['A'].width = 15
+    for col in range(2, 8):
+        ws.column_dimensions[chr(64+col)].width = 18
+    
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf
+
+
+def gst_summary_to_pdf(rows, fy):
+    """Generate GST Monthly Summary as PDF."""
+    buf = BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=30)
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle('Title', parent=styles['Normal'], fontSize=16, fontName='Helvetica-Bold', alignment=TA_CENTER, spaceAfter=12)
+    
+    elems = []
+    
+    # Title
+    elems.append(Paragraph(f"GST Monthly Summary - FY {fy}-{fy+1}", title_style))
+    elems.append(Spacer(1, 12))
+    
+    # Table
+    table_data = [["Period", "Taxable Value", "CGST", "SGST", "IGST", "Total GST", "Grand Total"]]
+    for row in rows:
+        table_data.append([
+            row.get("period", ""),
+            f"{row.get('taxable', 0):,.2f}",
+            f"{row.get('cgst', 0):,.2f}",
+            f"{row.get('sgst', 0):,.2f}",
+            f"{row.get('igst', 0):,.2f}",
+            f"{row.get('total_gst', 0):,.2f}",
+            f"{row.get('total', 0):,.2f}",
+        ])
+    
+    # Totals
+    if rows:
+        totals = {
+            k: sum(r[k] for r in rows)
+            for k in ("taxable", "cgst", "sgst", "igst", "total_gst", "total")
+        }
+        table_data.append([
+            "TOTAL",
+            f"{totals['taxable']:,.2f}",
+            f"{totals['cgst']:,.2f}",
+            f"{totals['sgst']:,.2f}",
+            f"{totals['igst']:,.2f}",
+            f"{totals['total_gst']:,.2f}",
+            f"{totals['total']:,.2f}",
+        ])
+    
+    t = Table(table_data, colWidths=[80, 80, 70, 70, 70, 80, 80])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.lightgrey),
+    ]))
+    elems.append(t)
+    
+    doc.build(elems)
+    buf.seek(0)
+    return buf
 
 
 def invoice_to_pdf(voucher, settings, amt_words):
